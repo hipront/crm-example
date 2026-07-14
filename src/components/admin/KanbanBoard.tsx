@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, type Lead, type LeadStatus } from "@/lib/leads";
 
@@ -53,14 +53,51 @@ function LeadCard({
 export default function KanbanBoard({ initialLeads }: { initialLeads: Lead[] }) {
   const [leads, setLeads] = useState(initialLeads);
 
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel("leads-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "leads" },
+        async (payload) => {
+          if (payload.eventType === "DELETE") {
+            setLeads((prev) => prev.filter((l) => l.id !== payload.old.id));
+            return;
+          }
+
+          const { data } = await supabase
+            .from("leads")
+            .select("id, name, contact, message, status, assigned_manager_id, created_at, paintings(title)")
+            .eq("id", payload.new.id)
+            .single();
+
+          if (!data) return;
+          const lead = data as unknown as Lead;
+
+          setLeads((prev) => {
+            const exists = prev.some((l) => l.id === lead.id);
+            return exists ? prev.map((l) => (l.id === lead.id ? lead : l)) : [lead, ...prev];
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   async function handleStatusChange(id: string, status: LeadStatus) {
+    const previousStatus = leads.find((l) => l.id === id)?.status;
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
 
     const supabase = createClient();
     const { error } = await supabase.from("leads").update({ status }).eq("id", id);
 
-    if (error) {
-      setLeads(initialLeads);
+    if (error && previousStatus) {
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: previousStatus } : l)));
     }
   }
 
