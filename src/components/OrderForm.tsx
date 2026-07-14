@@ -1,15 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { paintings } from "@/lib/paintings";
+import { supabase } from "@/lib/supabase";
+import type { Painting } from "@/lib/paintings";
 
-export default function OrderForm() {
-  const [status, setStatus] = useState<"idle" | "sent">("idle");
+export default function OrderForm({ paintings }: { paintings: Painting[] }) {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: отправка лида в Supabase (после проектирования схемы БД)
-    setStatus("sent");
+    setStatus("sending");
+
+    const formData = new FormData(e.currentTarget);
+    const paintingId = formData.get("painting") as string;
+
+    const { error } = await supabase.from("leads").insert({
+      name: formData.get("name") as string,
+      contact: formData.get("contact") as string,
+      painting_id: paintingId || null,
+      message: formData.get("message") as string,
+    });
+
+    setStatus(error ? "error" : "sent");
   }
 
   if (status === "sent") {
@@ -68,11 +80,15 @@ export default function OrderForm() {
           placeholder="Что-то ещё, что нам стоит знать?"
         />
       </label>
+      {status === "error" && (
+        <p className="text-sm text-red-400">Не получилось отправить заявку. Попробуйте ещё раз.</p>
+      )}
       <button
         type="submit"
-        className="mt-2 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-6 py-3 font-medium text-white transition-opacity hover:opacity-90"
+        disabled={status === "sending"}
+        className="mt-2 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-6 py-3 font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        Оставить заявку
+        {status === "sending" ? "Отправляем…" : "Оставить заявку"}
       </button>
     </form>
   );

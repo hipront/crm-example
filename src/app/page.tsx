@@ -1,8 +1,10 @@
 import Image from "next/image";
 import OrderForm from "@/components/OrderForm";
-import { paintings } from "@/lib/paintings";
+import { getPaintings } from "@/lib/paintings";
 
-export default function Home() {
+export default async function Home() {
+  const paintings = await getPaintings();
+
   return (
     <div className="flex flex-1 flex-col bg-black text-white">
       <nav className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-md">
@@ -57,7 +59,7 @@ export default function Home() {
             >
               <div className="relative aspect-[4/5] overflow-hidden">
                 <Image
-                  src={painting.image}
+                  src={painting.image_url}
                   alt={painting.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -78,7 +80,7 @@ export default function Home() {
           Оставьте заявку — мы свяжемся с вами и поможем выбрать картину.
         </p>
         <div className="mt-10">
-          <OrderForm />
+          <OrderForm paintings={paintings} />
         </div>
       </section>
 
