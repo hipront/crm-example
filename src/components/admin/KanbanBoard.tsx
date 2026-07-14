@@ -19,16 +19,37 @@ function formatDate(iso: string) {
 
 function LeadCard({
   lead,
+  canDelete,
   onStatusChange,
+  onDelete,
 }: {
   lead: Lead;
+  canDelete: boolean;
   onStatusChange: (id: string, status: LeadStatus) => void;
+  onDelete: (id: string) => void;
 }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-4">
       <div className="flex items-start justify-between gap-2">
         <span className="font-medium">{lead.name}</span>
-        <span className="shrink-0 text-xs text-white/40">{formatDate(lead.created_at)}</span>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-xs text-white/40">{formatDate(lead.created_at)}</span>
+          {canDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm(`Удалить заявку от «${lead.name}»? Это необратимо.`)) {
+                  onDelete(lead.id);
+                }
+              }}
+              className="text-white/30 transition-colors hover:text-red-400"
+              aria-label="Удалить заявку"
+              title="Удалить заявку"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
       <p className="mt-1 text-sm text-white/60">{lead.contact}</p>
       {lead.paintings && (
@@ -50,8 +71,15 @@ function LeadCard({
   );
 }
 
-export default function KanbanBoard({ initialLeads }: { initialLeads: Lead[] }) {
+export default function KanbanBoard({
+  initialLeads,
+  role,
+}: {
+  initialLeads: Lead[];
+  role: string | null;
+}) {
   const [leads, setLeads] = useState(initialLeads);
+  const canDelete = role === "admin";
 
   useEffect(() => {
     const supabase = createClient();
@@ -101,6 +129,18 @@ export default function KanbanBoard({ initialLeads }: { initialLeads: Lead[] }) 
     }
   }
 
+  async function handleDelete(id: string) {
+    const previous = leads;
+    setLeads((prev) => prev.filter((l) => l.id !== id));
+
+    const supabase = createClient();
+    const { error } = await supabase.from("leads").delete().eq("id", id);
+
+    if (error) {
+      setLeads(previous);
+    }
+  }
+
   const rejected = leads.filter((l) => l.status === "rejected");
 
   return (
@@ -116,7 +156,7 @@ export default function KanbanBoard({ initialLeads }: { initialLeads: Lead[] }) 
               </div>
               <div className="space-y-3">
                 {columnLeads.map((lead) => (
-                  <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} />
+                  <LeadCard key={lead.id} lead={lead} canDelete={canDelete} onStatusChange={handleStatusChange} onDelete={handleDelete} />
                 ))}
                 {columnLeads.length === 0 && (
                   <p className="px-1 text-xs text-white/30">Пусто</p>
@@ -134,7 +174,7 @@ export default function KanbanBoard({ initialLeads }: { initialLeads: Lead[] }) 
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {rejected.map((lead) => (
-              <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} />
+              <LeadCard key={lead.id} lead={lead} canDelete={canDelete} onStatusChange={handleStatusChange} onDelete={handleDelete} />
             ))}
           </div>
         </div>
