@@ -34,13 +34,14 @@ export default function Testimonials() {
         Что говорят покупатели
       </h2>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false}>
         <motion.div
           key={page}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mt-11 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, position: "absolute" }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
+          className="relative mt-11 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6"
         >
           {visible.map((t) => (
             <Spotlight key={t.name + t.city} lift={false} className="p-[30px] px-[26px] pb-[26px]">

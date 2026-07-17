@@ -31,14 +31,12 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
   const pickerRootRef = useRef<HTMLLabelElement>(null);
 
   useEffect(() => {
-    function onDocClick(e: MouseEvent) {
-      if (pickerOpen && pickerRootRef.current && !pickerRootRef.current.contains(e.target as Node)) {
-        setPickerOpen(false);
-      }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setPickerOpen(false);
     }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [pickerOpen]);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const selectedPainting = paintings.find((p) => p.id === selectedPaintingId) ?? null;
   const pickerResults = paintings
@@ -95,7 +93,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
             name="name"
             type="text"
             placeholder="Как к вам обращаться"
-            className={`rounded-[11px] border bg-black/35 px-3.5 py-2.5 text-[14.5px] text-ink-foreground outline-none transition-[border-color,box-shadow] duration-200 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)] ${
+            className={`rounded-[11px] border bg-black/35 px-3.5 py-2.5 text-[14.5px] text-ink-foreground outline-none transition-[border-color,box-shadow] duration-400 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)] ${
               nameError ? "border-red-400 shadow-[0_0_0_3px_rgba(251,113,133,0.15)]" : "border-white/12"
             }`}
           />
@@ -107,7 +105,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
             name="contact"
             type="text"
             placeholder="+7 999 000-00-00"
-            className={`rounded-[11px] border bg-black/35 px-3.5 py-2.5 text-[14.5px] text-ink-foreground outline-none transition-[border-color,box-shadow] duration-200 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)] ${
+            className={`rounded-[11px] border bg-black/35 px-3.5 py-2.5 text-[14.5px] text-ink-foreground outline-none transition-[border-color,box-shadow] duration-400 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)] ${
               contactError ? "border-red-400 shadow-[0_0_0_3px_rgba(251,113,133,0.15)]" : "border-white/12"
             }`}
           />
@@ -123,7 +121,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
             setPickerOpen((v) => !v);
             setPickerQuery("");
           }}
-          className={`flex w-full items-center gap-2.5 rounded-[11px] border px-3.5 py-[9px] text-left text-[14.5px] text-ink-foreground outline-none transition-[border-color,background] duration-200 active:scale-[0.98] ${
+          className={`flex w-full items-center gap-2.5 rounded-[11px] border px-3.5 py-[9px] text-left text-[14.5px] text-ink-foreground outline-none transition-[border-color,background] duration-400 active:scale-[0.98] ${
             pickerOpen ? "border-brand-fuchsia/60 bg-brand-fuchsia/8" : "border-white/12 bg-black/35 hover:border-brand-fuchsia/40"
           }`}
         >
@@ -136,18 +134,25 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
             {selectedPainting ? `${selectedPainting.title} — ${priceLabel(selectedPainting.price)}` : "Выберем позже / любая"}
           </span>
           <ChevronDownIcon
-            className="h-4 w-4 shrink-0 opacity-50 transition-transform duration-250"
+            className="h-4 w-4 shrink-0 opacity-50 transition-transform duration-400"
             style={{ transform: pickerOpen ? "rotate(180deg)" : "rotate(0deg)" }}
           />
         </button>
 
+        {pickerOpen && (
+          <div
+            onClick={() => setPickerOpen(false)}
+            className="fixed inset-0 z-30"
+            aria-hidden
+          />
+        )}
         <AnimatePresence>
           {pickerOpen && (
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
               className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 overflow-hidden rounded-xl border border-white/12 bg-[#16161a] shadow-[0_20px_44px_-16px_rgba(0,0,0,0.6)]"
             >
               <input
@@ -206,7 +211,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
           name="message"
           rows={3}
           placeholder="Что-то ещё, что нам стоит знать?"
-          className="resize-none rounded-[11px] border border-white/12 bg-black/35 px-3.5 py-[11px] text-[14.5px] text-ink-foreground outline-none transition-[border-color,box-shadow] duration-200 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)]"
+          className="resize-none rounded-[11px] border border-white/12 bg-black/35 px-3.5 py-[11px] text-[14.5px] text-ink-foreground outline-none transition-[border-color,box-shadow] duration-400 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)]"
         />
       </label>
 
@@ -217,7 +222,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="mt-1 rounded-full bg-gradient-brand py-[14px] text-[15px] font-semibold text-ink transition-[opacity,box-shadow,transform] duration-200 hover:opacity-90 hover:shadow-[0_0_32px_rgba(232,121,249,0.45)] active:scale-[0.97] disabled:opacity-50"
+        className="mt-1 rounded-full bg-gradient-brand py-[14px] text-[15px] font-semibold text-ink transition-[opacity,box-shadow,transform] duration-400 hover:opacity-90 hover:shadow-[0_0_32px_rgba(232,121,249,0.45)] active:scale-[0.97] disabled:opacity-50"
       >
         {status === "sending" ? "Отправляем…" : "Оставить заявку"}
       </button>

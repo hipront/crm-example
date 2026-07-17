@@ -58,7 +58,7 @@ export default function Faq() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
                     <p className="px-5 pb-[18px] text-sm leading-[1.6] text-ink-foreground/60">{item.answer}</p>

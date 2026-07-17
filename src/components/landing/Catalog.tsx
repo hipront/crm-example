@@ -77,17 +77,17 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
           }}
           type="text"
           placeholder="Поиск по названию…"
-          className="min-w-[220px] rounded-[11px] border border-white/12 bg-black/35 px-3.5 py-2.5 text-sm text-ink-foreground outline-none transition-[border-color,box-shadow] duration-250 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)]"
+          className="min-w-[220px] rounded-[11px] border border-white/12 bg-black/35 px-3.5 py-2.5 text-sm text-ink-foreground outline-none transition-[border-color,box-shadow] duration-400 focus:border-brand-fuchsia focus:shadow-[0_0_0_3px_rgba(232,121,249,0.15)]"
         />
         <div className="relative" ref={sortRootRef}>
           <button
             type="button"
             onClick={() => setSortOpen((v) => !v)}
-            className="flex items-center gap-2 rounded-[11px] border border-white/12 bg-black/35 px-3.5 py-2.5 text-sm text-ink-foreground transition-[border-color,background] duration-250 hover:border-brand-fuchsia/50 hover:bg-brand-fuchsia/8 active:scale-[0.97]"
+            className="flex items-center gap-2 rounded-[11px] border border-white/12 bg-black/35 px-3.5 py-2.5 text-sm text-ink-foreground transition-[border-color,background] duration-400 hover:border-brand-fuchsia/50 hover:bg-brand-fuchsia/8 active:scale-[0.97]"
           >
             {currentSortLabel}
             <ChevronDownIcon
-              className="h-3.5 w-3.5 opacity-50 transition-transform duration-250"
+              className="h-3.5 w-3.5 opacity-50 transition-transform duration-400"
               style={{ transform: sortOpen ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </button>
@@ -97,7 +97,7 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
                 className="absolute left-0 top-[calc(100%+6px)] z-40 min-w-[220px] overflow-hidden rounded-xl border border-white/12 bg-[#16161a] shadow-[0_20px_44px_-16px_rgba(0,0,0,0.6)]"
               >
                 {SORT_OPTIONS.map((opt) => (
@@ -130,7 +130,7 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
         key={sort + search}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
         className="mt-12 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-7"
       >
         {visible.map((painting) => {
@@ -142,10 +142,9 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
                   src={painting.image_url}
                   alt={painting.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   style={sold ? { filter: "grayscale(0.85) brightness(0.6)" } : undefined}
                 />
-                <div className="pointer-events-none absolute inset-0 -translate-x-[120%] -skew-x-[15deg] bg-[linear-gradient(100deg,transparent_40%,rgba(255,255,255,0.12)_50%,transparent_60%)] opacity-0 transition-none group-hover:animate-[sweep_1.1s_ease] group-hover:opacity-100" />
                 {sold && (
                   <div className="absolute left-[-32px] top-[14px] -rotate-[40deg] bg-ink px-10 py-[5px] text-[11px] font-bold uppercase tracking-[0.05em] text-ink-foreground shadow-[0_4px_12px_rgba(0,0,0,0.4)]">
                     Продано
@@ -173,7 +172,7 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
           <button
             type="button"
             onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-            className="rounded-full border border-white/14 bg-white/[0.03] px-[30px] py-[13px] text-[14.5px] font-semibold text-ink-foreground transition-all duration-250 hover:-translate-y-0.5 hover:border-brand-fuchsia/70 hover:bg-brand-fuchsia/16 hover:text-[#f0abfc] hover:shadow-[0_8px_24px_-8px_rgba(217,70,239,0.5)] active:scale-95"
+            className="rounded-full border border-white/14 bg-white/[0.03] px-[30px] py-[13px] text-[14.5px] font-semibold text-ink-foreground transition-all duration-400 hover:-translate-y-0.5 hover:border-brand-fuchsia/70 hover:bg-brand-fuchsia/16 hover:text-[#f0abfc] hover:shadow-[0_8px_24px_-8px_rgba(217,70,239,0.5)] active:scale-95"
           >
             Показать ещё картины
           </button>
@@ -189,7 +188,7 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             onClick={() => setActiveId(null)}
             className="fixed inset-0 z-80 flex items-center justify-center bg-black/78 p-6 backdrop-blur-sm"
           >
