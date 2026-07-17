@@ -28,14 +28,23 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
   const [contactError, setContactError] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerQuery, setPickerQuery] = useState("");
-  const pickerRootRef = useRef<HTMLLabelElement>(null);
+  const pickerRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setPickerOpen(false);
     }
+    function onDocClick(e: MouseEvent) {
+      if (pickerRootRef.current && !pickerRootRef.current.contains(e.target as Node)) {
+        setPickerOpen(false);
+      }
+    }
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onDocClick);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onDocClick);
+    };
   }, []);
 
   // Force-close whenever the selection changes, regardless of where it changed from
@@ -119,8 +128,8 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
         </label>
       </div>
 
-      <label className="relative flex flex-col gap-1.5 text-[13.5px] text-ink-foreground/60" ref={pickerRootRef}>
-        Картина
+      <div className="relative flex flex-col gap-1.5 text-[13.5px] text-ink-foreground/60" ref={pickerRootRef}>
+        <span>Картина</span>
         <button
           type="button"
           onClick={() => {
@@ -145,13 +154,6 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
           />
         </button>
 
-        {pickerOpen && (
-          <div
-            onClick={() => setPickerOpen(false)}
-            className="fixed inset-0 z-30"
-            aria-hidden
-          />
-        )}
         <AnimatePresence>
           {pickerOpen && (
             <motion.div
@@ -209,7 +211,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
             </motion.div>
           )}
         </AnimatePresence>
-      </label>
+      </div>
 
       <label className="flex flex-col gap-1.5 text-[13.5px] text-ink-foreground/60">
         Комментарий

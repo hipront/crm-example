@@ -12,6 +12,8 @@ import Faq from "@/components/landing/Faq";
 import Footer from "@/components/landing/Footer";
 import ScrollToTopButton from "@/components/landing/ScrollToTopButton";
 
+export const revalidate = 60;
+
 export default async function Home() {
   const paintings = await getPaintings();
 
