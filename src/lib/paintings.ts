@@ -6,19 +6,18 @@ export type Painting = {
   title: string;
   price: number;
   image_url: string;
+  is_available: boolean;
 };
 
 export type AdminPainting = Painting & {
   description: string | null;
-  is_available: boolean;
   created_at: string;
 };
 
 export async function getPaintings(): Promise<Painting[]> {
   const { data, error } = await supabase
     .from("paintings")
-    .select("id, title, price, image_url")
-    .eq("is_available", true)
+    .select("id, title, price, image_url, is_available")
     .order("created_at", { ascending: true });
 
   if (error) {

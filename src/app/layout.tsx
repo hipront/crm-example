@@ -1,20 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Unbounded, Manrope } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const unbounded = Unbounded({
+  variable: "--font-unbounded",
+  weight: ["500", "600", "700", "800"],
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Psychedelic Art — авторские картины",
-  description: "Каталог авторских психоделических картин и заказ онлайн.",
+  title: "Psychedelic Art — авторские психоделические картины",
+  description:
+    "Каталог авторских психоделических картин ручной работы. Единственные экземпляры, доставка по России и СНГ. Учебный/портфолио-проект.",
+  openGraph: {
+    title: "Psychedelic Art — авторские картины",
+    description: "Каталог авторских психоделических картин ручной работы.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -24,8 +32,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="ru"
+      className={`${unbounded.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
