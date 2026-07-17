@@ -229,7 +229,7 @@ export function OrderTrustBadges() {
   return (
     <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
       {TRUST_BADGES.map((badge) => (
-        <Spotlight key={badge.label} className="px-3 py-4 text-center">
+        <Spotlight key={badge.label} lift={false} className="px-3 py-4 text-center">
           <div className="text-xl">{badge.icon}</div>
           <p className="mt-1.5 text-[12.5px] text-ink-foreground/55">{badge.label}</p>
         </Spotlight>

@@ -133,6 +133,9 @@
   html {
     @apply font-sans scroll-smooth;
   }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 @layer utilities {

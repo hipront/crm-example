@@ -46,7 +46,7 @@ export default function Testimonials() {
             <Spotlight key={t.name + t.city} className="p-[30px] px-[26px] pb-[26px]">
               <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: t.accent.gradient }} />
               <span className="font-heading text-[44px] leading-none opacity-50" style={{ color: t.accent.color }}>
-                &ldquo;
+                &quot;
               </span>
               <p className="mt-0.5 text-[15px] leading-[1.6] text-ink-foreground/80">{t.quote}</p>
               <div className="mt-5 flex items-center gap-3">
