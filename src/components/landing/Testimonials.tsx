@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Reveal from "@/components/landing/Reveal";
 import Spotlight from "@/components/landing/Spotlight";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
@@ -34,15 +34,13 @@ export default function Testimonials() {
         Что говорят покупатели
       </h2>
 
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={page}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, position: "absolute" }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="relative mt-11 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6"
-        >
+      <motion.div
+        key={page}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="relative mt-11 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6"
+      >
           {visible.map((t) => (
             <Spotlight key={t.name + t.city} lift={false} className="p-[30px] px-[26px] pb-[26px]">
               <div className="absolute inset-x-0 -top-[30px] h-[3px]" style={{ background: t.accent.gradient }} />
@@ -64,8 +62,7 @@ export default function Testimonials() {
               </div>
             </Spotlight>
           ))}
-        </motion.div>
-      </AnimatePresence>
+      </motion.div>
 
       <div className="mt-9 flex items-center justify-center gap-5">
         <button
