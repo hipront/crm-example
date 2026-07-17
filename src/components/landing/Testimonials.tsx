@@ -73,7 +73,7 @@ export default function Testimonials() {
           onClick={() => setPage((p) => Math.max(0, p - 1))}
           disabled={page === 0}
           aria-label="Предыдущие отзывы"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] text-ink-foreground transition-all duration-250 hover:border-brand-fuchsia/60 hover:bg-brand-fuchsia/14 hover:text-[#f0abfc] active:scale-[0.92] disabled:opacity-30"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] text-ink-foreground transition-all duration-750 hover:border-brand-fuchsia/60 hover:bg-brand-fuchsia/14 hover:text-[#f0abfc] active:scale-[0.92] disabled:opacity-30"
         >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
@@ -83,7 +83,7 @@ export default function Testimonials() {
               key={i}
               type="button"
               onClick={() => setPage(i)}
-              className="h-2 rounded-full border-none transition-all duration-300 hover:opacity-75"
+              className="h-2 rounded-full border-none transition-all duration-550 hover:opacity-75"
               style={{
                 width: i === page ? 24 : 8,
                 background: i === page ? "linear-gradient(90deg,#e879f9,#22d3ee)" : "rgba(255,255,255,0.18)",
@@ -96,7 +96,7 @@ export default function Testimonials() {
           onClick={() => setPage((p) => Math.min(PAGE_COUNT - 1, p + 1))}
           disabled={page === PAGE_COUNT - 1}
           aria-label="Следующие отзывы"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] text-ink-foreground transition-all duration-250 hover:border-brand-fuchsia/60 hover:bg-brand-fuchsia/14 hover:text-[#f0abfc] active:scale-[0.92] disabled:opacity-30"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] text-ink-foreground transition-all duration-750 hover:border-brand-fuchsia/60 hover:bg-brand-fuchsia/14 hover:text-[#f0abfc] active:scale-[0.92] disabled:opacity-30"
         >
           <ChevronRightIcon className="h-4 w-4" />
         </button>

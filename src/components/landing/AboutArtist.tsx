@@ -7,7 +7,7 @@ export default function AboutArtist() {
       id="story"
       className="mx-auto grid w-full max-w-[1160px] items-center gap-10 px-7 pt-24 min-[761px]:grid-cols-[minmax(220px,300px)_1fr]"
     >
-      <div className="group relative aspect-square transition-transform duration-300 hover:-translate-y-1.5">
+      <div className="group relative aspect-square transition-transform duration-550 hover:-translate-y-1.5">
         <div className="absolute -inset-3.5 animate-[haloSpin_14s_linear_infinite] rounded-3xl bg-[conic-gradient(from_0deg,#e879f9,#a855f7,#22d3ee,#e879f9)] opacity-35 blur-[18px]" />
         <div className="relative h-full w-full overflow-hidden rounded-[20px]">
           <Image

@@ -34,7 +34,7 @@ export default function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.65, ease: "easeOut" }}
             className="overflow-hidden"
           >
             <div className="relative bg-gradient-brand px-10 py-[7px] text-center text-[12.5px] font-semibold text-ink">
@@ -53,7 +53,7 @@ export default function Header() {
       </AnimatePresence>
 
       <nav
-        className="border-b border-white/8 backdrop-blur-[14px] transition-colors duration-300"
+        className="border-b border-white/8 backdrop-blur-[14px] transition-colors duration-550"
         style={{ backgroundColor: scrolled ? "rgba(10,10,11,0.55)" : "rgba(10,10,11,0.95)" }}
       >
         <div className="mx-auto flex max-w-[1160px] items-center justify-between px-7 py-[18px]">
@@ -87,7 +87,7 @@ export default function Header() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              transition={{ duration: 0.65, ease: "easeOut" }}
               className="overflow-hidden border-t border-white/8 min-[761px]:hidden"
             >
               <div className="flex flex-col gap-3.5 px-7 pb-5 pt-3.5 text-[15px]">

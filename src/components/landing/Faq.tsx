@@ -42,7 +42,7 @@ export default function Faq() {
           return (
             <div
               key={item.question}
-              className="relative overflow-hidden rounded-[14px] border border-white/8 bg-white/[0.03] transition-[border-color,box-shadow] duration-300 hover:border-brand-fuchsia/35 hover:shadow-[0_16px_36px_-20px_rgba(217,70,239,0.4)]"
+              className="relative overflow-hidden rounded-[14px] border border-white/8 bg-white/[0.03] transition-[border-color,box-shadow] duration-550 hover:border-brand-fuchsia/35 hover:shadow-[0_16px_36px_-20px_rgba(217,70,239,0.4)]"
             >
               <button
                 type="button"
@@ -58,7 +58,7 @@ export default function Faq() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    transition={{ duration: 0.65, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
                     <p className="px-5 pb-[18px] text-sm leading-[1.6] text-ink-foreground/60">{item.answer}</p>
