@@ -37,7 +37,7 @@ export default function MaterialsDelivery() {
       </h2>
       <div className="mt-11 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6">
         {ITEMS.map((item) => (
-          <Spotlight key={item.title} className="p-7">
+          <Spotlight key={item.title} lift={false} className="p-7">
             <div className={`mb-[18px] flex h-12 w-12 items-center justify-center rounded-2xl border ${item.bg} ${item.border}`}>
               <item.Icon className={`h-[22px] w-[22px] ${item.color}`} />
             </div>

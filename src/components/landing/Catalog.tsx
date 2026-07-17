@@ -136,7 +136,7 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
         {visible.map((painting) => {
           const sold = !painting.is_available;
           return (
-            <Spotlight key={painting.id} onClick={() => setActiveId(painting.id)} className="cursor-pointer active:scale-[0.98] active:-translate-y-0.5">
+            <Spotlight key={painting.id} onClick={() => setActiveId(painting.id)} lift={false} className="group cursor-pointer">
               <div className="relative aspect-[4/5] overflow-hidden">
                 <Image
                   src={painting.image_url}
@@ -145,6 +145,7 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   style={sold ? { filter: "grayscale(0.85) brightness(0.6)" } : undefined}
                 />
+                <div className="pointer-events-none absolute inset-0 -translate-x-[120%] -skew-x-[15deg] bg-[linear-gradient(100deg,transparent_40%,rgba(255,255,255,0.12)_50%,transparent_60%)] opacity-0 transition-none group-hover:animate-[sweep_1.1s_ease] group-hover:opacity-100" />
                 {sold && (
                   <div className="absolute left-[-32px] top-[14px] -rotate-[40deg] bg-ink px-10 py-[5px] text-[11px] font-bold uppercase tracking-[0.05em] text-ink-foreground shadow-[0_4px_12px_rgba(0,0,0,0.4)]">
                     Продано

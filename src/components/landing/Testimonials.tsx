@@ -43,8 +43,8 @@ export default function Testimonials() {
           className="mt-11 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6"
         >
           {visible.map((t) => (
-            <Spotlight key={t.name + t.city} className="p-[30px] px-[26px] pb-[26px]">
-              <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: t.accent.gradient }} />
+            <Spotlight key={t.name + t.city} lift={false} className="p-[30px] px-[26px] pb-[26px]">
+              <div className="absolute inset-x-0 -top-[30px] h-[3px]" style={{ background: t.accent.gradient }} />
               <span className="font-heading text-[44px] leading-none opacity-50" style={{ color: t.accent.color }}>
                 &quot;
               </span>

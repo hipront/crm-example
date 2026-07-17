@@ -36,7 +36,7 @@ export default function HowItWorks() {
       </h2>
       <div className="mt-11 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-7">
         {STEPS.map((step) => (
-          <Spotlight key={step.number} className="p-7 px-5 text-center">
+          <Spotlight key={step.number} lift={false} className="p-7 px-5 text-center">
             <div
               className={`mx-auto mb-[18px] flex items-center justify-center rounded-2xl border font-heading font-semibold ${step.chipBg} ${step.chipBorder} ${step.color}`}
               style={{ width: 52, height: 52 }}
