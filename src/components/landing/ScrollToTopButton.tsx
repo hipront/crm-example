@@ -25,7 +25,7 @@ export default function ScrollToTopButton() {
           transition={{ duration: 0.65, ease: "easeOut" }}
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Наверх"
-          className="fixed bottom-7 right-7 z-60 flex h-12 w-12 items-center justify-center rounded-full border border-white/14 text-ink shadow-[0_12px_30px_-8px_rgba(217,70,239,0.5)] transition-[transform,box-shadow] duration-650 ease-out hover:-translate-y-1 hover:shadow-[0_18px_36px_-6px_rgba(217,70,239,0.65)] active:translate-y-0 active:scale-[0.94]"
+          className="fixed bottom-7 right-7 z-60 flex h-12 w-12 items-center justify-center rounded-full border border-white/14 text-ink shadow-[0_12px_30px_-8px_rgba(217,70,239,0.5)] transition-[transform,box-shadow] duration-250 ease-out hover:-translate-y-1 hover:shadow-[0_18px_36px_-6px_rgba(217,70,239,0.65)] active:translate-y-0 active:scale-[0.94]"
           style={{ background: "radial-gradient(circle at 32% 32%, #f0abfc, #a855f7 55%, #22d3ee 100%)" }}
         >
           <ArrowUpIcon className="h-5 w-5" />

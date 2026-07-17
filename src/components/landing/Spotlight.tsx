@@ -38,7 +38,7 @@ export default function Spotlight({
         lift ? "hover:-translate-y-1.5 hover:shadow-[0_24px_50px_-18px_rgba(217,70,239,0.35)]" : ""
       } ${className ?? ""}`}
     >
-      <div ref={glowRef} className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-750" />
+      <div ref={glowRef} className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-150" />
       <div className="relative z-10">{children}</div>
     </div>
   );
