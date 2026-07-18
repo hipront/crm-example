@@ -48,6 +48,10 @@ function MagneticButton() {
     <motion.a
       ref={ref}
       href="#catalog"
+      onClick={(e) => {
+        e.preventDefault();
+        document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ x: springX, y: springY }}
