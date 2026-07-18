@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# working design docs — not part of the product, kept local-only
+/Дизайн для админки/
+/DESIGN-BRIEF.md
+/DESIGN-CONTEXT-BUNDLE.md
+/CLAUDE.md
+/BACKLOG.md

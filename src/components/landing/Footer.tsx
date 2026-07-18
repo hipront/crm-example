@@ -1,3 +1,16 @@
+import Link from "next/link";
+
+function ComingSoonLink({ label }: { label: string }) {
+  return (
+    <span className="group relative inline-block w-fit cursor-default text-ink-foreground/35">
+      {label}
+      <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-[#1a1a1e] px-2 py-1 text-[11px] text-ink-foreground/70 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+        Скоро
+      </span>
+    </span>
+  );
+}
+
 export default function Footer() {
   return (
     <footer className="mt-24 border-t border-white/8 px-7 pb-8 pt-14">
@@ -16,20 +29,16 @@ export default function Footer() {
         <div>
           <h4 className="mb-3.5 text-[13px] uppercase tracking-[0.06em] text-ink-foreground/40">Соцсети</h4>
           <div className="flex flex-col gap-2 text-sm">
-            <a href="#" className="text-ink-foreground/60 no-underline hover:text-ink-foreground">
-              Telegram
-            </a>
-            <a href="#" className="text-ink-foreground/60 no-underline hover:text-ink-foreground">
-              Instagram
-            </a>
+            <ComingSoonLink label="Telegram" />
+            <ComingSoonLink label="Instagram" />
           </div>
         </div>
         <div>
           <h4 className="mb-3.5 text-[13px] uppercase tracking-[0.06em] text-ink-foreground/40">Информация</h4>
           <div className="flex flex-col gap-2 text-sm">
-            <a href="#" className="text-ink-foreground/60 no-underline hover:text-ink-foreground">
+            <Link href="/privacy" className="text-ink-foreground/60 no-underline hover:text-ink-foreground">
               Политика конфиденциальности
-            </a>
+            </Link>
           </div>
         </div>
       </div>
