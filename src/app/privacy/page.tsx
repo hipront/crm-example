@@ -6,8 +6,11 @@ export default function PrivacyPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-ink px-7 py-20 text-ink-foreground">
-      <div className="mx-auto max-w-[720px]">
+    <div
+      className="min-h-screen bg-ink px-7 py-20 text-ink-foreground"
+      onClick={() => router.back()}
+    >
+      <div className="mx-auto max-w-[720px]" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           onClick={() => router.back()}
