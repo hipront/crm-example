@@ -1,19 +1,27 @@
 "use client";
 
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function PrivacyPage() {
   const router = useRouter();
+  const hasNavigated = useRef(false);
+
+  function goBack() {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    router.back();
+  }
 
   return (
     <div
       className="min-h-screen bg-ink px-7 py-20 text-ink-foreground"
-      onClick={() => router.back()}
+      onClick={goBack}
     >
       <div className="mx-auto max-w-[720px]" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={goBack}
           className="text-sm text-ink-foreground/50 no-underline hover:text-ink-foreground"
         >
           ← Назад
