@@ -24,9 +24,36 @@ const TESTIMONIALS = [
 const PAGE_SIZE = 3;
 const PAGE_COUNT = Math.ceil(TESTIMONIALS.length / PAGE_SIZE);
 
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09 } },
+};
+
+const cardVariants = {
+  hidden: (direction: number) => ({
+    opacity: 0,
+    scale: 0.96,
+    x: direction * 24,
+    filter: "blur(4px)",
+  }),
+  show: {
+    opacity: 1,
+    scale: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
 export default function Testimonials() {
   const [page, setPage] = useState(0);
+  const [direction, setDirection] = useState(1);
   const visible = TESTIMONIALS.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  function goTo(next: number) {
+    setDirection(next > page ? 1 : -1);
+    setPage(next);
+  }
 
   return (
     <Reveal id="testimonials" className="mx-auto w-full max-w-[1160px] px-7 pt-24">
@@ -36,38 +63,41 @@ export default function Testimonials() {
 
       <motion.div
         key={page}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
+        custom={direction}
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
         className="relative mt-11 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6"
       >
           {visible.map((t) => (
-            <Spotlight key={t.name + t.city} lift={false} className="p-[30px] px-[26px] pb-[26px]">
-              <div className="absolute inset-x-0 -top-[30px] h-[3px]" style={{ background: t.accent.gradient }} />
-              <span className="font-heading text-[44px] leading-none opacity-50" style={{ color: t.accent.color }}>
-                &quot;
-              </span>
-              <p className="mt-0.5 text-[15px] leading-[1.6] text-ink-foreground/80">{t.quote}</p>
-              <div className="mt-5 flex items-center gap-3">
-                <div
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-heading text-[13px] font-bold text-ink"
-                  style={{ background: t.accent.gradient }}
-                >
-                  {t.initial}
+            <motion.div key={t.name + t.city} custom={direction} variants={cardVariants}>
+              <Spotlight lift={false} className="p-[30px] px-[26px] pb-[26px]">
+                <div className="absolute inset-x-0 -top-[30px] h-[3px]" style={{ background: t.accent.gradient }} />
+                <span className="font-heading text-[44px] leading-none opacity-50" style={{ color: t.accent.color }}>
+                  &quot;
+                </span>
+                <p className="mt-0.5 text-[15px] leading-[1.6] text-ink-foreground/80">{t.quote}</p>
+                <div className="mt-5 flex items-center gap-3">
+                  <div
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-heading text-[13px] font-bold text-ink"
+                    style={{ background: t.accent.gradient }}
+                  >
+                    {t.initial}
+                  </div>
+                  <div>
+                    <p className="text-[13.5px] font-semibold text-ink-foreground/90">{t.name}</p>
+                    <p className="mt-0.5 text-xs text-ink-foreground/40">{t.city}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[13.5px] font-semibold text-ink-foreground/90">{t.name}</p>
-                  <p className="mt-0.5 text-xs text-ink-foreground/40">{t.city}</p>
-                </div>
-              </div>
-            </Spotlight>
+              </Spotlight>
+            </motion.div>
           ))}
       </motion.div>
 
       <div className="mt-9 flex items-center justify-center gap-5">
         <button
           type="button"
-          onClick={() => setPage((p) => Math.max(0, p - 1))}
+          onClick={() => goTo(Math.max(0, page - 1))}
           disabled={page === 0}
           aria-label="Предыдущие отзывы"
           className="flex h-10 w-10 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] text-ink-foreground transition-all duration-300 hover:border-brand-fuchsia/60 hover:bg-brand-fuchsia/14 hover:text-[#f0abfc] active:scale-[0.92] disabled:opacity-30"
@@ -79,7 +109,7 @@ export default function Testimonials() {
             <button
               key={i}
               type="button"
-              onClick={() => setPage(i)}
+              onClick={() => goTo(i)}
               className="h-2 rounded-full border-none transition-all duration-300 hover:opacity-75"
               style={{
                 width: i === page ? 24 : 8,
@@ -90,7 +120,7 @@ export default function Testimonials() {
         </div>
         <button
           type="button"
-          onClick={() => setPage((p) => Math.min(PAGE_COUNT - 1, p + 1))}
+          onClick={() => goTo(Math.min(PAGE_COUNT - 1, page + 1))}
           disabled={page === PAGE_COUNT - 1}
           aria-label="Следующие отзывы"
           className="flex h-10 w-10 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] text-ink-foreground transition-all duration-300 hover:border-brand-fuchsia/60 hover:bg-brand-fuchsia/14 hover:text-[#f0abfc] active:scale-[0.92] disabled:opacity-30"
