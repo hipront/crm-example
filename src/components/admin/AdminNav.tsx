@@ -9,8 +9,8 @@ type Tab = { href: string; label: string; roles?: Role[] };
 const TABS: Tab[] = [
   { href: "/admin/leads", label: "Канбан" },
   { href: "/admin/analytics", label: "Аналитика", roles: ["rop", "admin", "viewer"] },
-  { href: "/admin/catalog", label: "Каталог", roles: ["admin"] },
-  { href: "/admin/users", label: "Пользователи", roles: ["admin"] },
+  { href: "/admin/catalog", label: "Каталог", roles: ["admin", "viewer"] },
+  { href: "/admin/users", label: "Пользователи", roles: ["admin", "viewer"] },
 ];
 
 export default function AdminNav({ role }: { role: string | null }) {

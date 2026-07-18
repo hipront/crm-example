@@ -11,9 +11,11 @@ function formatDate(iso: string) {
 export default function UsersManager({
   initialProfiles,
   currentUserId,
+  canEdit,
 }: {
   initialProfiles: Profile[];
   currentUserId: string;
+  canEdit: boolean;
 }) {
   const [profiles, setProfiles] = useState(initialProfiles);
   const [search, setSearch] = useState("");
@@ -79,12 +81,13 @@ export default function UsersManager({
                 <div className="flex items-center gap-2">
                   <input
                     defaultValue={p.full_name ?? ""}
+                    disabled={!canEdit}
                     onBlur={(e) => handleNameChange(p.id, e.target.value.trim())}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") e.currentTarget.blur();
                     }}
                     placeholder="Без имени"
-                    className="w-full min-w-0 rounded-lg border border-transparent bg-transparent px-1.5 py-0.5 font-medium text-white outline-none transition-colors hover:border-white/15 focus:border-fuchsia-400 focus:bg-black/30"
+                    className="w-full min-w-0 rounded-lg border border-transparent bg-transparent px-1.5 py-0.5 font-medium text-white outline-none transition-colors hover:border-white/15 focus:border-fuchsia-400 focus:bg-black/30 disabled:cursor-default disabled:hover:border-transparent"
                   />
                   {isSelf && <span className="shrink-0 text-xs text-fuchsia-300">(вы)</span>}
                 </div>
@@ -95,9 +98,9 @@ export default function UsersManager({
               </span>
               <select
                 value={p.role}
-                disabled={isSelf || savingId === p.id}
+                disabled={!canEdit || isSelf || savingId === p.id}
                 onChange={(e) => handleRoleChange(p.id, e.target.value as Role)}
-                title={isSelf ? "Нельзя изменить собственную роль" : undefined}
+                title={!canEdit ? undefined : isSelf ? "Нельзя изменить собственную роль" : undefined}
                 className="w-36 shrink-0 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15"
               >
                 {ROLES.map((r) => (

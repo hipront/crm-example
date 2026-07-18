@@ -15,7 +15,13 @@ import ConfirmModal from "@/components/admin/ConfirmModal";
 
 type SortMode = "date_desc" | "date_asc" | "price_asc" | "price_desc";
 
-export default function CatalogManager({ initialPaintings }: { initialPaintings: AdminPainting[] }) {
+export default function CatalogManager({
+  initialPaintings,
+  canEdit,
+}: {
+  initialPaintings: AdminPainting[];
+  canEdit: boolean;
+}) {
   const [paintings, setPaintings] = useState(initialPaintings);
   const [form, setForm] = useState<FormState | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -194,13 +200,15 @@ export default function CatalogManager({ initialPaintings }: { initialPaintings:
             {visible.length} из {paintings.length}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 active:scale-[0.97]"
-        >
-          + Добавить картину
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            onClick={openCreate}
+            className="rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 active:scale-[0.97]"
+          >
+            + Добавить картину
+          </button>
+        )}
       </div>
 
       {form && (
@@ -225,6 +233,7 @@ export default function CatalogManager({ initialPaintings }: { initialPaintings:
       <PaintingCards
         paintings={visible}
         view={view}
+        canEdit={canEdit}
         onToggleAvailable={handleToggleAvailable}
         onEdit={openEdit}
         onDeleteRequest={setDeleteTarget}

@@ -2,17 +2,27 @@
 
 import type { AdminPainting } from "@/lib/paintings";
 
-function AvailabilityBadge({ p, onToggle }: { p: AdminPainting; onToggle: () => void }) {
+function AvailabilityBadge({
+  p,
+  canEdit,
+  onToggle,
+}: {
+  p: AdminPainting;
+  canEdit: boolean;
+  onToggle: () => void;
+}) {
+  const classes = `shrink-0 rounded-full px-2.5 py-1 text-xs transition-colors ${
+    p.is_available
+      ? `bg-emerald-500/15 text-emerald-300 ${canEdit ? "hover:bg-emerald-500/25" : ""}`
+      : `bg-white/10 text-white/40 ${canEdit ? "hover:bg-white/20 hover:text-white/60" : ""}`
+  }`;
+
+  if (!canEdit) {
+    return <span className={classes}>{p.is_available ? "В наличии" : "Продано"}</span>;
+  }
+
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`shrink-0 rounded-full px-2.5 py-1 text-xs transition-colors ${
-        p.is_available
-          ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
-          : "bg-white/10 text-white/40 hover:bg-white/20 hover:text-white/60"
-      }`}
-    >
+    <button type="button" onClick={onToggle} className={classes}>
       {p.is_available ? "В наличии" : "Продано"}
     </button>
   );
@@ -21,12 +31,14 @@ function AvailabilityBadge({ p, onToggle }: { p: AdminPainting; onToggle: () => 
 export default function PaintingCards({
   paintings,
   view,
+  canEdit,
   onToggleAvailable,
   onEdit,
   onDeleteRequest,
 }: {
   paintings: AdminPainting[];
   view: "grid" | "list";
+  canEdit: boolean;
   onToggleAvailable: (p: AdminPainting) => void;
   onEdit: (p: AdminPainting) => void;
   onDeleteRequest: (p: AdminPainting) => void;
@@ -61,24 +73,26 @@ export default function PaintingCards({
                 <p className={`font-medium ${p.is_available ? "" : "text-white/60"}`}>{p.title}</p>
                 <p className="text-sm text-white/50">{p.price.toLocaleString("ru-RU")} ₽</p>
               </div>
-              <AvailabilityBadge p={p} onToggle={() => onToggleAvailable(p)} />
+              <AvailabilityBadge p={p} canEdit={canEdit} onToggle={() => onToggleAvailable(p)} />
             </div>
-            <div className="mt-3 flex gap-2">
-              <button
-                type="button"
-                onClick={() => onEdit(p)}
-                className="flex-1 rounded-lg border border-white/15 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
-              >
-                Изменить
-              </button>
-              <button
-                type="button"
-                onClick={() => onDeleteRequest(p)}
-                className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
-              >
-                ✕
-              </button>
-            </div>
+            {canEdit && (
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onEdit(p)}
+                  className="flex-1 rounded-lg border border-white/15 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
+                >
+                  Изменить
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDeleteRequest(p)}
+                  className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -101,21 +115,25 @@ export default function PaintingCards({
             <p className={`truncate font-medium ${p.is_available ? "" : "text-white/60"}`}>{p.title}</p>
             <p className="text-sm text-white/50">{p.price.toLocaleString("ru-RU")} ₽</p>
           </div>
-          <AvailabilityBadge p={p} onToggle={() => onToggleAvailable(p)} />
-          <button
-            type="button"
-            onClick={() => onEdit(p)}
-            className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
-          >
-            Изменить
-          </button>
-          <button
-            type="button"
-            onClick={() => onDeleteRequest(p)}
-            className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
-          >
-            ✕
-          </button>
+          <AvailabilityBadge p={p} canEdit={canEdit} onToggle={() => onToggleAvailable(p)} />
+          {canEdit && (
+            <>
+              <button
+                type="button"
+                onClick={() => onEdit(p)}
+                className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
+              >
+                Изменить
+              </button>
+              <button
+                type="button"
+                onClick={() => onDeleteRequest(p)}
+                className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
+              >
+                ✕
+              </button>
+            </>
+          )}
         </div>
       ))}
     </div>

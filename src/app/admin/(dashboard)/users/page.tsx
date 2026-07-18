@@ -7,7 +7,16 @@ export default async function UsersPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+
   const profiles = await getAllProfiles(supabase);
 
-  return <UsersManager initialProfiles={profiles} currentUserId={user!.id} />;
+  return (
+    <UsersManager initialProfiles={profiles} currentUserId={user!.id} canEdit={profile?.role === "admin"} />
+  );
 }

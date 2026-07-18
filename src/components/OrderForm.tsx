@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { Painting } from "@/lib/paintings";
 import { ChevronDownIcon } from "@/components/icons";
@@ -142,7 +141,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
         >
           {selectedPainting && (
             <span className="relative block h-7 w-7 shrink-0 overflow-hidden rounded-md">
-              <Image src={selectedPainting.image_url} alt="" fill className="object-cover" />
+              <Image src={selectedPainting.image_url} alt="" fill sizes="28px" className="object-cover" />
             </span>
           )}
           <span className={`flex-1 ${selectedPainting ? "text-ink-foreground" : "text-ink-foreground/40"}`}>
@@ -154,63 +153,57 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
           />
         </button>
 
-        <AnimatePresence>
-          {pickerOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 overflow-hidden rounded-xl border border-white/12 bg-[#16161a] shadow-[0_20px_44px_-16px_rgba(0,0,0,0.6)]"
-            >
-              <input
-                value={pickerQuery}
-                onChange={(e) => setPickerQuery(e.target.value)}
-                type="text"
-                placeholder="Поиск по названию…"
-                className="w-full border-0 border-b border-white/8 bg-transparent px-3.5 py-3 text-sm text-ink-foreground outline-none"
-              />
-              <div className="max-h-[280px] overflow-y-auto">
+        {pickerOpen && (
+          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 overflow-hidden rounded-xl border border-white/12 bg-[#16161a] shadow-[0_20px_44px_-16px_rgba(0,0,0,0.6)]">
+            <input
+              value={pickerQuery}
+              onChange={(e) => setPickerQuery(e.target.value)}
+              type="text"
+              placeholder="Поиск по названию…"
+              className="w-full border-0 border-b border-white/8 bg-transparent px-3.5 py-3 text-sm text-ink-foreground outline-none"
+            />
+            <div className="max-h-[280px] overflow-y-auto">
+              <div
+                onClick={() => {
+                  setSelectedPaintingId("");
+                  setPickerOpen(false);
+                }}
+                className="cursor-pointer px-3.5 py-2.5 text-sm text-ink-foreground/75 hover:bg-brand-fuchsia/10"
+              >
+                Выберем позже / любая
+              </div>
+              {pickerResults.map((p) => (
                 <div
+                  key={p.id}
                   onClick={() => {
-                    setSelectedPaintingId("");
+                    setSelectedPaintingId(p.id);
                     setPickerOpen(false);
                   }}
-                  className="cursor-pointer px-3.5 py-2.5 text-sm text-ink-foreground/75 hover:bg-brand-fuchsia/10"
+                  className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 hover:bg-brand-fuchsia/10"
                 >
-                  Выберем позже / любая
+                  <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-md">
+                    <Image
+                      src={p.image_url}
+                      alt=""
+                      fill
+                      sizes="32px"
+                      loading="lazy"
+                      className="object-cover"
+                      style={!p.is_available ? { filter: "grayscale(0.85) brightness(0.6)" } : undefined}
+                    />
+                  </span>
+                  <span className="flex-1 text-[13.5px] text-ink-foreground">{p.title}</span>
+                  <span className="text-[12.5px] text-ink-foreground/45">
+                    {p.is_available ? priceLabel(p.price) : "продано"}
+                  </span>
                 </div>
-                {pickerResults.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => {
-                      setSelectedPaintingId(p.id);
-                      setPickerOpen(false);
-                    }}
-                    className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 hover:bg-brand-fuchsia/10"
-                  >
-                    <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-md">
-                      <Image
-                        src={p.image_url}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        style={!p.is_available ? { filter: "grayscale(0.85) brightness(0.6)" } : undefined}
-                      />
-                    </span>
-                    <span className="flex-1 text-[13.5px] text-ink-foreground">{p.title}</span>
-                    <span className="text-[12.5px] text-ink-foreground/45">
-                      {p.is_available ? priceLabel(p.price) : "продано"}
-                    </span>
-                  </div>
-                ))}
-                {pickerResults.length === 0 && (
-                  <div className="p-3.5 text-center text-[13px] text-ink-foreground/40">Не найдено</div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              ))}
+              {pickerResults.length === 0 && (
+                <div className="p-3.5 text-center text-[13px] text-ink-foreground/40">Не найдено</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <label className="flex flex-col gap-1.5 text-[13.5px] text-ink-foreground/60">
