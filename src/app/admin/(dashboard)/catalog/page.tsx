@@ -1,7 +1,10 @@
-export default function CatalogPage() {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-white/60">
-      Управление каталогом картин (CRUD) появится здесь на следующем шаге.
-    </div>
-  );
+import { createClient } from "@/lib/supabase/server";
+import { getAllPaintings } from "@/lib/paintings";
+import CatalogManager from "@/components/admin/CatalogManager";
+
+export default async function CatalogPage() {
+  const supabase = await createClient();
+  const paintings = await getAllPaintings(supabase);
+
+  return <CatalogManager initialPaintings={paintings} />;
 }

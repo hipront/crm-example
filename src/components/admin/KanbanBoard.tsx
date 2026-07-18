@@ -62,7 +62,7 @@ function LeadCard({
         value={lead.status}
         disabled={!canEdit}
         onChange={(e) => onStatusChange(lead.id, e.target.value as LeadStatus)}
-        className="mt-3 w-full rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-3 w-full rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15"
       >
         {LEAD_STATUSES.map((s) => (
           <option key={s} value={s}>

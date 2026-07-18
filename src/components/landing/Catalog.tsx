@@ -221,8 +221,8 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
                   {priceLabel(activePainting.price)}
                 </p>
                 <p className="mt-4 text-sm leading-[1.6] text-ink-foreground/60">
-                  Авторская работа, акрил на холсте. Единственный экземпляр — при продаже снимается
-                  из каталога.
+                  {activePainting.description?.trim() ||
+                    "Авторская работа, акрил на холсте. Единственный экземпляр — при продаже снимается из каталога."}
                 </p>
                 {!activePainting.is_available ? (
                   <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 text-center text-sm text-ink-foreground/50">
