@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type Tab = { href: string; label: string; roles?: Array<"manager" | "rop" | "admin"> };
+type Role = "manager" | "rop" | "admin" | "viewer";
+type Tab = { href: string; label: string; roles?: Role[] };
 
 const TABS: Tab[] = [
   { href: "/admin/leads", label: "Канбан" },
-  { href: "/admin/analytics", label: "Аналитика", roles: ["rop", "admin"] },
+  { href: "/admin/analytics", label: "Аналитика", roles: ["rop", "admin", "viewer"] },
   { href: "/admin/catalog", label: "Каталог", roles: ["admin"] },
   { href: "/admin/users", label: "Пользователи", roles: ["admin"] },
 ];
@@ -15,7 +16,7 @@ const TABS: Tab[] = [
 export default function AdminNav({ role }: { role: string | null }) {
   const pathname = usePathname();
 
-  const tabs = TABS.filter((tab) => !tab.roles || tab.roles.includes(role as "manager" | "rop" | "admin"));
+  const tabs = TABS.filter((tab) => !tab.roles || tab.roles.includes(role as Role));
 
   return (
     <nav className="mt-8 flex gap-1 border-b border-white/10">

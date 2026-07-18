@@ -20,11 +20,13 @@ function formatDate(iso: string) {
 function LeadCard({
   lead,
   canDelete,
+  canEdit,
   onStatusChange,
   onDelete,
 }: {
   lead: Lead;
   canDelete: boolean;
+  canEdit: boolean;
   onStatusChange: (id: string, status: LeadStatus) => void;
   onDelete: (id: string) => void;
 }) {
@@ -58,8 +60,9 @@ function LeadCard({
       {lead.message && <p className="mt-2 text-sm text-white/50">{lead.message}</p>}
       <select
         value={lead.status}
+        disabled={!canEdit}
         onChange={(e) => onStatusChange(lead.id, e.target.value as LeadStatus)}
-        className="mt-3 w-full rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400"
+        className="mt-3 w-full rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {LEAD_STATUSES.map((s) => (
           <option key={s} value={s}>
@@ -80,6 +83,7 @@ export default function KanbanBoard({
 }) {
   const [leads, setLeads] = useState(initialLeads);
   const canDelete = role === "admin";
+  const canEdit = role !== "viewer";
 
   useEffect(() => {
     const supabase = createClient();
@@ -156,7 +160,7 @@ export default function KanbanBoard({
               </div>
               <div className="space-y-3">
                 {columnLeads.map((lead) => (
-                  <LeadCard key={lead.id} lead={lead} canDelete={canDelete} onStatusChange={handleStatusChange} onDelete={handleDelete} />
+                  <LeadCard key={lead.id} lead={lead} canDelete={canDelete} canEdit={canEdit} onStatusChange={handleStatusChange} onDelete={handleDelete} />
                 ))}
                 {columnLeads.length === 0 && (
                   <p className="px-1 text-xs text-white/30">Пусто</p>
@@ -174,7 +178,7 @@ export default function KanbanBoard({
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {rejected.map((lead) => (
-              <LeadCard key={lead.id} lead={lead} canDelete={canDelete} onStatusChange={handleStatusChange} onDelete={handleDelete} />
+              <LeadCard key={lead.id} lead={lead} canDelete={canDelete} canEdit={canEdit} onStatusChange={handleStatusChange} onDelete={handleDelete} />
             ))}
           </div>
         </div>
