@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Unbounded, Manrope } from "next/font/google";
+import AnalyticsGate from "@/components/AnalyticsGate";
 import "./globals.css";
 
 const unbounded = Unbounded({
@@ -35,7 +36,10 @@ export default function RootLayout({
       lang="ru"
       className={`${unbounded.variable} ${manrope.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <AnalyticsGate />
+      </body>
     </html>
   );
 }
