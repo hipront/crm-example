@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import LogoutButton from "@/components/LogoutButton";
 import AdminNav from "@/components/admin/AdminNav";
+import NameOnboardingModal from "@/components/admin/NameOnboardingModal";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -31,6 +32,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         <div className="mt-8">{children}</div>
       </div>
+
+      <NameOnboardingModal userId={user!.id} hasName={Boolean(profile?.full_name)} />
     </div>
   );
 }

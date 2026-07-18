@@ -1,8 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import { createClient } from "@/lib/supabase/client";
-import { LEAD_STATUSES, LEAD_STATUS_LABELS, type Lead, type LeadStatus } from "@/lib/leads";
+import { type Lead, type LeadStatus } from "@/lib/leads";
+import { updatePainting } from "@/lib/paintings";
+import LeadCard from "@/components/admin/kanban/LeadCard";
+import Column from "@/components/admin/kanban/Column";
+import ConfirmModal from "@/components/admin/ConfirmModal";
 
 const VISIBLE_COLUMNS: LeadStatus[] = [
   "new",
@@ -13,77 +27,46 @@ const VISIBLE_COLUMNS: LeadStatus[] = [
   "closed",
 ];
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
-}
-
-function LeadCard({
-  lead,
-  canDelete,
-  canEdit,
-  onStatusChange,
-  onDelete,
-}: {
-  lead: Lead;
-  canDelete: boolean;
-  canEdit: boolean;
-  onStatusChange: (id: string, status: LeadStatus) => void;
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <div className="flex items-start justify-between gap-2">
-        <span className="font-medium">{lead.name}</span>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="text-xs text-white/40">{formatDate(lead.created_at)}</span>
-          {canDelete && (
-            <button
-              type="button"
-              onClick={() => {
-                if (confirm(`Удалить заявку от «${lead.name}»? Это необратимо.`)) {
-                  onDelete(lead.id);
-                }
-              }}
-              className="text-white/30 transition-colors hover:text-red-400"
-              aria-label="Удалить заявку"
-              title="Удалить заявку"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      </div>
-      <p className="mt-1 text-sm text-white/60">{lead.contact}</p>
-      {lead.paintings && (
-        <p className="mt-1 text-sm text-fuchsia-300">{lead.paintings.title}</p>
-      )}
-      {lead.message && <p className="mt-2 text-sm text-white/50">{lead.message}</p>}
-      <select
-        value={lead.status}
-        disabled={!canEdit}
-        onChange={(e) => onStatusChange(lead.id, e.target.value as LeadStatus)}
-        className="mt-3 w-full rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15"
-      >
-        {LEAD_STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {LEAD_STATUS_LABELS[s]}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
 export default function KanbanBoard({
   initialLeads,
   role,
+  managers,
+  highlightStatus,
 }: {
   initialLeads: Lead[];
   role: string | null;
+  managers: { id: string; full_name: string | null }[];
+  highlightStatus?: string;
 }) {
   const [leads, setLeads] = useState(initialLeads);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null);
+  const [closeTarget, setCloseTarget] = useState<{ id: string; name: string; status: LeadStatus } | null>(
+    null,
+  );
+  const [highlighted, setHighlighted] = useState(highlightStatus ?? null);
+  const columnRefs = useRef<Partial<Record<string, HTMLDivElement>>>({});
   const canDelete = role === "admin";
   const canEdit = role !== "viewer";
+  const isAdmin = role === "admin";
+  const canAssignManager = role === "rop" || role === "admin";
+  const router = useRouter();
+
+  function canEditLead(lead: Lead) {
+    return canEdit && (lead.status !== "closed" || isAdmin);
+  }
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  useEffect(() => {
+    if (!highlightStatus) return;
+    const el = columnRefs.current[highlightStatus];
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const timer = setTimeout(() => setHighlighted(null), 2500);
+    router.replace("/admin/leads");
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -101,7 +84,9 @@ export default function KanbanBoard({
 
           const { data } = await supabase
             .from("leads")
-            .select("id, name, contact, message, status, assigned_manager_id, created_at, paintings(title)")
+            .select(
+              "id, name, contact, message, status, assigned_manager_id, painting_id, created_at, paintings(title)",
+            )
             .eq("id", payload.new.id)
             .single();
 
@@ -121,68 +106,187 @@ export default function KanbanBoard({
     };
   }, []);
 
-  async function handleStatusChange(id: string, status: LeadStatus) {
-    const previousStatus = leads.find((l) => l.id === id)?.status;
+  async function applyStatusChange(id: string, status: LeadStatus) {
+    const lead = leads.find((l) => l.id === id);
+    const previousStatus = lead?.status;
+    if (!lead || previousStatus === status) return;
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
 
     const supabase = createClient();
     const { error } = await supabase.from("leads").update({ status }).eq("id", id);
 
-    if (error && previousStatus) {
-      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: previousStatus } : l)));
+    if (error) {
+      if (previousStatus) {
+        setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: previousStatus } : l)));
+      }
+      return;
+    }
+
+    if (status === "paid" && lead.painting_id) {
+      updatePainting(supabase, lead.painting_id, { is_available: false }).catch(() => {});
     }
   }
 
-  async function handleDelete(id: string) {
+  function requestStatusChange(id: string, status: LeadStatus) {
+    if (status === "closed") {
+      const lead = leads.find((l) => l.id === id);
+      if (lead) setCloseTarget({ id, name: lead.name, status });
+      return;
+    }
+    applyStatusChange(id, status);
+  }
+
+  function confirmClose() {
+    if (!closeTarget) return;
+    applyStatusChange(closeTarget.id, closeTarget.status);
+    setCloseTarget(null);
+  }
+
+  async function assignManager(leadId: string, managerId: string | null) {
     const previous = leads;
-    setLeads((prev) => prev.filter((l) => l.id !== id));
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, assigned_manager_id: managerId } : l)));
 
     const supabase = createClient();
-    const { error } = await supabase.from("leads").delete().eq("id", id);
+    const { error } = await supabase
+      .from("leads")
+      .update({ assigned_manager_id: managerId })
+      .eq("id", leadId);
+
+    if (error) {
+      setLeads(previous);
+      alert("Не удалось назначить менеджера");
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+
+    const previous = leads;
+    setLeads((prev) => prev.filter((l) => l.id !== target.id));
+
+    const supabase = createClient();
+    const { error } = await supabase.from("leads").delete().eq("id", target.id);
 
     if (error) {
       setLeads(previous);
     }
   }
 
+  function handleDragStart(e: DragStartEvent) {
+    setActiveId(String(e.active.id));
+  }
+
+  function handleDragEnd(e: DragEndEvent) {
+    setActiveId(null);
+    const overStatus = e.over?.id as LeadStatus | undefined;
+    if (!overStatus) return;
+    requestStatusChange(String(e.active.id), overStatus);
+  }
+
   const rejected = leads.filter((l) => l.status === "rejected");
+  const activeLead = leads.find((l) => l.id === activeId) ?? null;
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {VISIBLE_COLUMNS.map((status) => {
-          const columnLeads = leads.filter((l) => l.status === status);
-          return (
-            <div key={status} className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
-              <div className="mb-3 flex items-center justify-between px-1">
-                <h3 className="text-sm font-medium text-white/80">{LEAD_STATUS_LABELS[status]}</h3>
-                <span className="text-xs text-white/40">{columnLeads.length}</span>
-              </div>
-              <div className="space-y-3">
-                {columnLeads.map((lead) => (
-                  <LeadCard key={lead.id} lead={lead} canDelete={canDelete} canEdit={canEdit} onStatusChange={handleStatusChange} onDelete={handleDelete} />
-                ))}
-                {columnLeads.length === 0 && (
-                  <p className="px-1 text-xs text-white/30">Пусто</p>
-                )}
-              </div>
-            </div>
-          );
-        })}
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveId(null)}
+    >
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {VISIBLE_COLUMNS.map((status) => (
+            <Column
+              key={status}
+              status={status}
+              leads={leads.filter((l) => l.status === status)}
+              containerRef={(el) => {
+                columnRefs.current[status] = el ?? undefined;
+              }}
+              highlighted={highlighted === status}
+              renderCard={(lead) => (
+                <LeadCard
+                  key={lead.id}
+                  lead={lead}
+                  canDelete={canDelete}
+                  canEdit={canEditLead(lead)}
+                  managers={managers}
+                  canAssignManager={canAssignManager}
+                  onAssignManager={assignManager}
+                  onDeleteRequest={setDeleteTarget}
+                  dragging={activeId === lead.id}
+                />
+              )}
+            />
+          ))}
+        </div>
+
+        {rejected.length > 0 && (
+          <div className="max-w-sm">
+            <Column
+              status="rejected"
+              leads={rejected}
+              containerRef={(el) => {
+                columnRefs.current["rejected"] = el ?? undefined;
+              }}
+              highlighted={highlighted === "rejected"}
+              renderCard={(lead) => (
+                <LeadCard
+                  key={lead.id}
+                  lead={lead}
+                  canDelete={canDelete}
+                  canEdit={canEditLead(lead)}
+                  managers={managers}
+                  canAssignManager={canAssignManager}
+                  onAssignManager={assignManager}
+                  onDeleteRequest={setDeleteTarget}
+                  dragging={activeId === lead.id}
+                />
+              )}
+            />
+          </div>
+        )}
       </div>
 
-      {rejected.length > 0 && (
-        <div>
-          <h3 className="mb-3 text-sm font-medium text-white/50">
-            Отказ ({rejected.length})
-          </h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {rejected.map((lead) => (
-              <LeadCard key={lead.id} lead={lead} canDelete={canDelete} canEdit={canEdit} onStatusChange={handleStatusChange} onDelete={handleDelete} />
-            ))}
+      <DragOverlay>
+        {activeLead ? (
+          <div className="w-72 rounded-xl border border-fuchsia-400/50 bg-[#1a1622] p-4 shadow-2xl">
+            <p className="font-medium">{activeLead.name}</p>
+            <p className="mt-1 text-sm text-white/60">{activeLead.contact}</p>
           </div>
-        </div>
+        ) : null}
+      </DragOverlay>
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Удалить заявку?"
+          message={<>Вы точно хотите удалить заявку от «{deleteTarget.name}»? Это действие необратимо.</>}
+          confirmLabel="Удалить"
+          confirmVariant="danger"
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
-    </div>
+
+      {closeTarget && (
+        <ConfirmModal
+          title="Закрыть сделку?"
+          message={
+            <>
+              Вы точно хотите перевести заявку от «{closeTarget.name}» в статус &quot;Закрыт&quot;?
+              {isAdmin
+                ? " После этого статус смогут менять только администраторы."
+                : " После этого статус нельзя будет изменить — обратитесь к администратору."}
+            </>
+          }
+          confirmLabel="Закрыть сделку"
+          confirmVariant="brand"
+          onConfirm={confirmClose}
+          onCancel={() => setCloseTarget(null)}
+        />
+      )}
+    </DndContext>
   );
 }

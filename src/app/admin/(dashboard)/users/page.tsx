@@ -1,7 +1,13 @@
-export default function UsersPage() {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-white/60">
-      Управление пользователями и ролями появится здесь на следующем шаге.
-    </div>
-  );
+import { createClient } from "@/lib/supabase/server";
+import { getAllProfiles } from "@/lib/profiles";
+import UsersManager from "@/components/admin/UsersManager";
+
+export default async function UsersPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const profiles = await getAllProfiles(supabase);
+
+  return <UsersManager initialProfiles={profiles} currentUserId={user!.id} />;
 }

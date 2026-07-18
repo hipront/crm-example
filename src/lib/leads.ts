@@ -29,6 +29,7 @@ export type Lead = {
   message: string | null;
   status: LeadStatus;
   assigned_manager_id: string | null;
+  painting_id: string | null;
   created_at: string;
   paintings: { title: string } | null;
 };
@@ -36,7 +37,7 @@ export type Lead = {
 export async function getLeads(supabase: SupabaseClient): Promise<Lead[]> {
   const { data, error } = await supabase
     .from("leads")
-    .select("id, name, contact, message, status, assigned_manager_id, created_at, paintings(title)")
+    .select("id, name, contact, message, status, assigned_manager_id, painting_id, created_at, paintings(title)")
     .order("created_at", { ascending: false });
 
   if (error) {

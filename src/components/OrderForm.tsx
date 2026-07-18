@@ -54,9 +54,9 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
   }, [selectedPaintingId]);
 
   const selectedPainting = paintings.find((p) => p.id === selectedPaintingId) ?? null;
-  const pickerResults = paintings
-    .filter((p) => p.title.toLowerCase().includes(pickerQuery.trim().toLowerCase()))
-    .slice(0, 8);
+  const pickerResults = paintings.filter((p) =>
+    p.title.toLowerCase().includes(pickerQuery.trim().toLowerCase()),
+  );
 
   function validate(formData: FormData) {
     const name = (formData.get("name") as string).trim();
