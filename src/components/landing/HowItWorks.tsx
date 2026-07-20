@@ -34,7 +34,7 @@ export default function HowItWorks() {
       <h2 className="text-center font-heading text-[clamp(24px,3vw,32px)] font-semibold tracking-[-0.015em] text-ink-foreground">
         Как проходит заказ
       </h2>
-      <div className="mt-11 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-7">
+      <div className="mt-11 grid grid-cols-1 gap-7 min-[761px]:grid-cols-3">
         {STEPS.map((step) => (
           <Spotlight key={step.number} lift={false} className="p-7 px-5 text-center">
             <div

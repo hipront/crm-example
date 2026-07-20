@@ -35,7 +35,7 @@ export default function MaterialsDelivery() {
       <h2 className="text-center font-heading text-[clamp(24px,3vw,32px)] font-semibold tracking-[-0.015em] text-ink-foreground">
         Материалы и доставка
       </h2>
-      <div className="mt-11 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6">
+      <div className="mt-11 grid grid-cols-1 gap-6 min-[761px]:grid-cols-3">
         {ITEMS.map((item) => (
           <Spotlight key={item.title} lift={false} className="p-7">
             <div className={`mb-[18px] flex h-12 w-12 items-center justify-center rounded-2xl border ${item.bg} ${item.border}`}>
