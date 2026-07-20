@@ -103,7 +103,7 @@ export default function Header() {
   }, []);
 
   return (
-    <div className="flex flex-col">
+    <>
       {showBanner && (
         <div className="relative bg-gradient-brand px-10 py-[7px] text-center text-[12.5px] font-semibold text-ink opacity-90 min-[960px]:opacity-100">
           Учебный проект — сделано для портфолио
@@ -119,7 +119,7 @@ export default function Header() {
       )}
 
       <nav
-        className="sticky top-0 z-50 relative border-b border-white/8 backdrop-blur-[14px] transition-[background-color,transform] duration-300"
+        className="sticky top-0 z-50 border-b border-white/8 backdrop-blur-[14px] transition-[background-color,transform] duration-300"
         style={{
           backgroundColor: scrolled
             ? isDesktop
@@ -180,6 +180,6 @@ export default function Header() {
           </div>
         )}
       </nav>
-    </div>
+    </>
   );
 }
