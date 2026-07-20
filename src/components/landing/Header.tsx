@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuHamburgerIcon } from "@/components/icons";
 
 const NAV_LINKS = [
@@ -21,13 +21,31 @@ function scrollToSection(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
 export default function Header() {
   const [showBanner, setShowBanner] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string | null>(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+    function onScroll() {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+      if (currentY > 80 && delta > 4) {
+        setNavHidden(true);
+      } else if (delta < -4) {
+        setNavHidden(false);
+      }
+      lastScrollY.current = currentY;
+    }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -85,13 +103,14 @@ export default function Header() {
       )}
 
       <nav
-        className="sticky top-0 z-50 relative border-b border-white/8 backdrop-blur-[14px] transition-colors duration-550"
+        className="sticky top-0 z-50 relative border-b border-white/8 backdrop-blur-[14px] transition-[background-color,transform] duration-300"
         style={{
           backgroundColor: scrolled
             ? isDesktop
               ? "rgba(10,10,11,0.35)"
               : "rgba(10,10,11,0.8)"
             : "rgba(10,10,11,0.95)",
+          transform: navHidden ? "translateY(-100%)" : "translateY(0)",
         }}
       >
         <div className="mx-auto flex max-w-[1160px] items-center justify-between px-7 py-[18px]">
