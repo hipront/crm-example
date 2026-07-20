@@ -36,16 +36,28 @@ export default function Header() {
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
-    function onScroll() {
+    let ticking = false;
+
+    function update() {
       const currentY = window.scrollY;
       const delta = currentY - lastScrollY.current;
-      if (currentY > 80 && delta > 4) {
+      if (currentY <= 80) {
+        setNavHidden(false);
+      } else if (delta > 2) {
         setNavHidden(true);
-      } else if (delta < -4) {
+      } else if (delta < -2) {
         setNavHidden(false);
       }
       lastScrollY.current = currentY;
+      ticking = false;
     }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
