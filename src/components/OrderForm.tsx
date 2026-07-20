@@ -192,7 +192,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
                       style={!p.is_available ? { filter: "grayscale(0.85) brightness(0.6)" } : undefined}
                     />
                   </span>
-                  <span className="min-w-0 flex-1 text-[13.5px] text-ink-foreground">{p.title}</span>
+                  <span className="min-w-0 flex-1 break-words text-[13.5px] text-ink-foreground">{p.title}</span>
                   <span className="shrink-0 whitespace-nowrap text-[12.5px] text-ink-foreground/45">
                     {p.is_available ? priceLabel(p.price) : "продано"}
                   </span>
