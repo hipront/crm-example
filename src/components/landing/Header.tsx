@@ -35,6 +35,10 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    if (isDesktop) {
+      setNavHidden(false);
+      return;
+    }
     lastScrollY.current = window.scrollY;
     let ticking = false;
 
@@ -60,7 +64,7 @@ export default function Header() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isDesktop]);
 
   useEffect(() => {
     if (!mobileNavOpen) return;
@@ -122,7 +126,7 @@ export default function Header() {
               ? "rgba(10,10,11,0.35)"
               : "rgba(10,10,11,0.8)"
             : "rgba(10,10,11,0.95)",
-          transform: navHidden ? "translateY(-100%)" : "translateY(0)",
+          transform: !isDesktop && navHidden ? "translateY(-100%)" : "translateY(0)",
         }}
       >
         <div className="mx-auto flex max-w-[1160px] items-center justify-between px-7 py-[18px]">
