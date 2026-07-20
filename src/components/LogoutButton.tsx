@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LogoutButton() {
+export default function LogoutButton({ variant = "button" }: { variant?: "button" | "link" }) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -11,6 +11,17 @@ export default function LogoutButton() {
     await supabase.auth.signOut();
     router.push("/admin/login");
     router.refresh();
+  }
+
+  if (variant === "link") {
+    return (
+      <button
+        onClick={handleLogout}
+        className="text-[11px] text-white/40 transition-colors hover:text-white/70"
+      >
+        Выйти
+      </button>
+    );
   }
 
   return (

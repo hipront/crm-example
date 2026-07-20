@@ -17,6 +17,7 @@ import { updatePainting } from "@/lib/paintings";
 import LeadCard from "@/components/admin/kanban/LeadCard";
 import Column from "@/components/admin/kanban/Column";
 import ConfirmModal from "@/components/admin/ConfirmModal";
+import LeadPreviewSheet from "@/components/admin/kanban/LeadPreviewSheet";
 
 const VISIBLE_COLUMNS: LeadStatus[] = [
   "new",
@@ -30,26 +31,22 @@ const VISIBLE_COLUMNS: LeadStatus[] = [
 export default function KanbanBoard({
   initialLeads,
   role,
-  managers,
   highlightStatus,
 }: {
   initialLeads: Lead[];
   role: string | null;
-  managers: { id: string; full_name: string | null }[];
   highlightStatus?: string;
 }) {
   const [leads, setLeads] = useState(initialLeads);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null);
   const [closeTarget, setCloseTarget] = useState<{ id: string; name: string; status: LeadStatus } | null>(
     null,
   );
   const [highlighted, setHighlighted] = useState(highlightStatus ?? null);
+  const [previewLeadId, setPreviewLeadId] = useState<string | null>(null);
   const columnRefs = useRef<Partial<Record<string, HTMLDivElement>>>({});
-  const canDelete = role === "admin";
   const canEdit = role !== "viewer";
   const isAdmin = role === "admin";
-  const canAssignManager = role === "rop" || role === "admin";
   const router = useRouter();
 
   function canEditLead(lead: Lead) {
@@ -63,7 +60,7 @@ export default function KanbanBoard({
     const el = columnRefs.current[highlightStatus];
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     const timer = setTimeout(() => setHighlighted(null), 2500);
-    router.replace("/admin/leads");
+    router.replace("/admin/kanban");
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -142,38 +139,6 @@ export default function KanbanBoard({
     setCloseTarget(null);
   }
 
-  async function assignManager(leadId: string, managerId: string | null) {
-    const previous = leads;
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, assigned_manager_id: managerId } : l)));
-
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("leads")
-      .update({ assigned_manager_id: managerId })
-      .eq("id", leadId);
-
-    if (error) {
-      setLeads(previous);
-      alert("Не удалось назначить менеджера");
-    }
-  }
-
-  async function confirmDelete() {
-    if (!deleteTarget) return;
-    const target = deleteTarget;
-    setDeleteTarget(null);
-
-    const previous = leads;
-    setLeads((prev) => prev.filter((l) => l.id !== target.id));
-
-    const supabase = createClient();
-    const { error } = await supabase.from("leads").delete().eq("id", target.id);
-
-    if (error) {
-      setLeads(previous);
-    }
-  }
-
   function handleDragStart(e: DragStartEvent) {
     setActiveId(String(e.active.id));
   }
@@ -185,7 +150,6 @@ export default function KanbanBoard({
     requestStatusChange(String(e.active.id), overStatus);
   }
 
-  const rejected = leads.filter((l) => l.status === "rejected");
   const activeLead = leads.find((l) => l.id === activeId) ?? null;
 
   return (
@@ -210,44 +174,14 @@ export default function KanbanBoard({
                 <LeadCard
                   key={lead.id}
                   lead={lead}
-                  canDelete={canDelete}
                   canEdit={canEditLead(lead)}
-                  managers={managers}
-                  canAssignManager={canAssignManager}
-                  onAssignManager={assignManager}
-                  onDeleteRequest={setDeleteTarget}
+                  onOpen={(l) => setPreviewLeadId(l.id)}
                   dragging={activeId === lead.id}
                 />
               )}
             />
           ))}
         </div>
-
-        {rejected.length > 0 && (
-          <div className="max-w-sm">
-            <Column
-              status="rejected"
-              leads={rejected}
-              containerRef={(el) => {
-                columnRefs.current["rejected"] = el ?? undefined;
-              }}
-              highlighted={highlighted === "rejected"}
-              renderCard={(lead) => (
-                <LeadCard
-                  key={lead.id}
-                  lead={lead}
-                  canDelete={canDelete}
-                  canEdit={canEditLead(lead)}
-                  managers={managers}
-                  canAssignManager={canAssignManager}
-                  onAssignManager={assignManager}
-                  onDeleteRequest={setDeleteTarget}
-                  dragging={activeId === lead.id}
-                />
-              )}
-            />
-          </div>
-        )}
       </div>
 
       <DragOverlay>
@@ -258,17 +192,6 @@ export default function KanbanBoard({
           </div>
         ) : null}
       </DragOverlay>
-
-      {deleteTarget && (
-        <ConfirmModal
-          title="Удалить заявку?"
-          message={<>Вы точно хотите удалить заявку от «{deleteTarget.name}»? Это действие необратимо.</>}
-          confirmLabel="Удалить"
-          confirmVariant="danger"
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
 
       {closeTarget && (
         <ConfirmModal
@@ -287,6 +210,19 @@ export default function KanbanBoard({
           onCancel={() => setCloseTarget(null)}
         />
       )}
+
+      {previewLeadId && (() => {
+        const previewLead = leads.find((l) => l.id === previewLeadId);
+        if (!previewLead) return null;
+        return (
+          <LeadPreviewSheet
+            lead={previewLead}
+            canEdit={canEditLead(previewLead)}
+            onChangeStatus={(status) => requestStatusChange(previewLead.id, status)}
+            onClose={() => setPreviewLeadId(null)}
+          />
+        );
+      })()}
     </DndContext>
   );
 }

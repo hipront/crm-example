@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import LogoutButton from "@/components/LogoutButton";
 import AdminNav, { AdminMobileNav } from "@/components/admin/AdminNav";
 import NameOnboardingModal from "@/components/admin/NameOnboardingModal";
+import { ROLE_LABELS, type Role } from "@/lib/profiles";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -17,16 +18,38 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-black text-white md:flex">
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-white/10 px-4 py-8 md:flex">
-        <h1 className="px-3 text-lg font-semibold">Дашборд</h1>
-        <p className="mt-1 px-3 text-xs text-white/50 truncate">{user!.email}</p>
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-white/10 md:flex md:sticky md:top-0 md:h-screen">
+        <div className="border-b border-white/10 px-5 py-5">
+          <div className="flex items-center gap-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-fuchsia-500 via-purple-500 to-cyan-400 text-xs font-bold text-black">
+              PA
+            </div>
+            <div className="min-w-0">
+              <span className="block truncate text-sm font-bold leading-none text-white">Psychedelic Art</span>
+              <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-widest text-white/40">
+                CRM
+              </span>
+            </div>
+          </div>
+        </div>
 
-        <div className="mt-8">
+        <div className="flex-1 overflow-y-auto px-3 py-4">
           <AdminNav role={profile?.role ?? null} />
         </div>
 
-        <div className="mt-auto pt-8">
-          <LogoutButton />
+        <div className="border-t border-white/10 px-3 py-4">
+          <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
+            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 text-xs font-bold uppercase text-fuchsia-300">
+              {(user!.email ?? "?").charAt(0)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-white/80">{user!.email}</p>
+              <p className="text-[10px] text-white/40">{ROLE_LABELS[(profile?.role as Role) ?? "manager"]}</p>
+            </div>
+          </div>
+          <div className="mt-1 px-2">
+            <LogoutButton variant="link" />
+          </div>
         </div>
       </aside>
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ClipboardList,
   LayoutGrid,
   BarChart3,
   Palette,
@@ -13,7 +14,8 @@ type Role = "manager" | "rop" | "admin" | "viewer";
 type Tab = { href: string; label: string; roles?: Role[]; Icon: typeof LayoutGrid };
 
 const TABS: Tab[] = [
-  { href: "/admin/leads", label: "Канбан", Icon: LayoutGrid },
+  { href: "/admin/leads", label: "Лиды", Icon: ClipboardList },
+  { href: "/admin/kanban", label: "CRM", Icon: LayoutGrid },
   { href: "/admin/analytics", label: "Аналитика", roles: ["rop", "admin", "viewer"], Icon: BarChart3 },
   { href: "/admin/catalog", label: "Каталог", roles: ["admin", "viewer"], Icon: Palette },
   { href: "/admin/users", label: "Пользователи", roles: ["admin", "viewer"], Icon: Users },

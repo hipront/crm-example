@@ -129,7 +129,7 @@ export default function AnalyticsDashboard({
   );
 
   function goToKanban(status: string) {
-    router.push(`/admin/leads?status=${status}`);
+    router.push(`/admin/kanban?status=${status}`);
   }
 
   const maxRevenue = Math.max(...data.revenueByManager.map((m) => m.revenue), 1);
