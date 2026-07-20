@@ -11,7 +11,7 @@ import Spotlight from "@/components/landing/Spotlight";
 type Status = "idle" | "sending" | "sent" | "error";
 
 function priceLabel(price: number) {
-  return price.toLocaleString("ru-RU") + " ₽";
+  return price.toLocaleString("ru-RU") + " ₽";
 }
 
 const TRUST_BADGES = [
@@ -192,8 +192,8 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
                       style={!p.is_available ? { filter: "grayscale(0.85) brightness(0.6)" } : undefined}
                     />
                   </span>
-                  <span className="flex-1 text-[13.5px] text-ink-foreground">{p.title}</span>
-                  <span className="text-[12.5px] text-ink-foreground/45">
+                  <span className="min-w-0 flex-1 text-[13.5px] text-ink-foreground">{p.title}</span>
+                  <span className="shrink-0 whitespace-nowrap text-[12.5px] text-ink-foreground/45">
                     {p.is_available ? priceLabel(p.price) : "продано"}
                   </span>
                 </div>
@@ -233,7 +233,7 @@ export default function OrderForm({ paintings }: { paintings: Painting[] }) {
 
 export function OrderTrustBadges() {
   return (
-    <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
+    <div className="mt-8 grid grid-cols-1 gap-3.5 min-[600px]:grid-cols-3">
       {TRUST_BADGES.map((badge) => (
         <Spotlight key={badge.label} lift={false} className="px-3 py-4 text-center">
           <div className="text-xl">{badge.icon}</div>

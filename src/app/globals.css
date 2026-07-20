@@ -129,9 +129,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #0a0a0b;
   }
   html {
     @apply font-sans;
+    overflow-x: hidden;
+    touch-action: pan-y;
   }
   button:not(:disabled) {
     cursor: pointer;
@@ -264,6 +267,16 @@
   }
   100% {
     transform: scale(1.18) translate(-2%, -1.5%);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

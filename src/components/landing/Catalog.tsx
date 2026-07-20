@@ -1,20 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import Reveal from "@/components/landing/Reveal";
 import Spotlight from "@/components/landing/Spotlight";
 import { ChevronDownIcon, CloseIcon } from "@/components/icons";
 import { useOrderContext } from "@/components/landing/OrderContext";
+import { useBodyScrollLock } from "@/components/landing/useBodyScrollLock";
 import type { Painting } from "@/lib/paintings";
 
 type SortMode = "default" | "price_asc" | "price_desc";
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "default", label: "По умолчанию" },
-  { value: "price_asc", label: "Цена: сначала дешевле" },
-  { value: "price_desc", label: "Цена: сначала дороже" },
+  { value: "price_asc", label: "Сначала дешевле" },
+  { value: "price_desc", label: "Сначала дороже" },
 ];
 
 const PAGE_SIZE = 6;
@@ -30,7 +32,12 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
   const [sortOpen, setSortOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const sortRootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -53,6 +60,8 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
 
   const activePainting = paintings.find((p) => p.id === activeId) ?? null;
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sort)!.label;
+
+  const unlockScroll = useBodyScrollLock(!!activePainting);
 
   return (
     <Reveal id="catalog" className="mx-auto w-full max-w-[1160px] px-7 pt-24">
@@ -152,9 +161,9 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
                 )}
               </div>
               <div className="flex items-center justify-between gap-3 px-5 py-[18px]">
-                <span className="flex items-center gap-2 text-[15px] font-semibold text-ink-foreground">
-                  {painting.title}
-                  <span className="rounded-full border border-brand-fuchsia/25 bg-brand-fuchsia/12 px-2 py-0.5 text-[10.5px] font-semibold text-[#f0abfc]">
+                <span className="flex min-w-0 items-center gap-2 text-[15px] font-semibold text-ink-foreground">
+                  <span className="truncate">{painting.title}</span>
+                  <span className="shrink-0 whitespace-nowrap rounded-full border border-brand-fuchsia/25 bg-brand-fuchsia/12 px-2 py-0.5 text-[10.5px] font-semibold text-[#f0abfc]">
                     1 экз.
                   </span>
                 </span>
@@ -182,7 +191,8 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
         <p className="mt-10 text-center text-[13px] text-ink-foreground/40">Показаны все картины</p>
       )}
 
-      <AnimatePresence>
+      {mounted && createPortal(
+        <AnimatePresence onExitComplete={unlockScroll}>
         {activePainting && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -190,13 +200,21 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.65, ease: "easeInOut" }}
             onClick={() => setActiveId(null)}
-            className="fixed inset-0 z-80 flex items-center justify-center bg-black/78 p-6 backdrop-blur-sm"
+            className="fixed inset-0 z-80 flex h-[100dvh] items-center justify-center bg-black/78 p-6 backdrop-blur-sm"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="grid max-h-[88vh] w-full max-w-[760px] grid-cols-1 overflow-auto rounded-[20px] border border-white/10 bg-[#111114] min-[761px]:grid-cols-2"
+              className="relative grid max-h-[88vh] w-full max-w-[760px] grid-cols-1 overflow-auto rounded-[20px] border border-white/10 bg-[#111114] min-[761px]:grid-cols-2"
             >
-              <div className="relative aspect-[4/5]">
+              <button
+                type="button"
+                onClick={() => setActiveId(null)}
+                aria-label="Закрыть"
+                className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/14 bg-black/45 text-ink-foreground backdrop-blur-sm hover:border-brand-fuchsia/40 min-[761px]:right-4 min-[761px]:top-4"
+              >
+                <CloseIcon className="h-3.5 w-3.5" />
+              </button>
+              <div className="relative aspect-[4/3] min-[761px]:aspect-[4/5]">
                 <Image
                   src={activePainting.image_url}
                   alt={activePainting.title}
@@ -205,16 +223,8 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
                   style={!activePainting.is_available ? { filter: "grayscale(0.85) brightness(0.6)" } : undefined}
                 />
               </div>
-              <div className="flex flex-col p-8">
-                <button
-                  type="button"
-                  onClick={() => setActiveId(null)}
-                  aria-label="Закрыть"
-                  className="flex h-8 w-8 self-end items-center justify-center rounded-full border border-white/14 bg-white/[0.03] text-ink-foreground hover:border-brand-fuchsia/40"
-                >
-                  <CloseIcon className="h-3.5 w-3.5" />
-                </button>
-                <h3 className="mt-4 font-heading text-[22px] font-semibold text-ink-foreground">
+              <div className="flex flex-col p-6 min-[761px]:p-8">
+                <h3 className="font-heading text-[22px] font-semibold text-ink-foreground min-[761px]:mt-4">
                   {activePainting.title}
                 </h3>
                 <p className="mt-2.5 text-xl font-semibold text-brand-fuchsia">
@@ -244,7 +254,9 @@ export default function Catalog({ paintings }: { paintings: Painting[] }) {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </Reveal>
   );
 }

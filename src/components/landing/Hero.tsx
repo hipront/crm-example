@@ -55,7 +55,7 @@ function MagneticButton() {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ x: springX, y: springY }}
-      className="mt-10 inline-flex animate-[ringPulse_3.2s_ease-in-out_infinite] items-center gap-2 rounded-full bg-gradient-brand px-8 py-[15px] text-[15px] font-semibold text-ink no-underline shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_20px_50px_-12px_rgba(217,70,239,0.4)] transition-shadow duration-750 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_26px_60px_-10px_rgba(217,70,239,0.55)]"
+      className="mt-10 inline-flex animate-[ringPulse_3.2s_ease-in-out_3] items-center gap-2 rounded-full bg-gradient-brand px-8 py-[15px] text-[15px] font-semibold text-ink no-underline shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_20px_50px_-12px_rgba(217,70,239,0.4)] transition-shadow duration-750 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_26px_60px_-10px_rgba(217,70,239,0.55)]"
     >
       Смотреть картины
     </motion.a>
@@ -105,7 +105,7 @@ export default function Hero() {
           transition={{ duration: 1.1, ease: "easeOut" }}
           className="max-w-[640px]"
         >
-          <span className="mb-6 inline-flex animate-[badgeGlow_4s_ease-in-out_infinite] items-center gap-2 rounded-full border border-brand-fuchsia/30 px-3.5 py-1.5 text-[12.5px] uppercase tracking-[0.08em] text-brand-fuchsia/85">
+          <span className="mb-6 inline-flex animate-[badgeGlow_4s_ease-in-out_3] items-center gap-2 rounded-full border border-brand-fuchsia/30 px-3.5 py-1.5 text-[12.5px] uppercase tracking-[0.08em] text-brand-fuchsia/85">
             Авторская живопись
           </span>
           <h1 className="text-gradient-brand font-heading text-[clamp(32px,5.2vw,68px)] font-bold leading-[1.05] tracking-[-0.02em]">

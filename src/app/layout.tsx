@@ -16,6 +16,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://psychedelic-art-crm.vercel.app"),
   title: "Psychedelic Art — авторские психоделические картины",
   description:
     "Каталог авторских психоделических картин ручной работы. Единственные экземпляры, доставка по России и СНГ. Учебный/портфолио-проект.",
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
     title: "Psychedelic Art — авторские картины",
     description: "Каталог авторских психоделических картин ручной работы.",
     type: "website",
+    images: [{ url: "/images/og-image.jpg", width: 1200, height: 630 }],
   },
 };
 

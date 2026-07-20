@@ -1,17 +1,33 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+import { usePrivacyModal } from "@/components/landing/PrivacyModalContext";
 
 function ComingSoonLink({ label }: { label: string }) {
+  const [tapped, setTapped] = useState(false);
+
   return (
-    <span className="group relative inline-block w-fit cursor-default text-ink-foreground/35">
+    <button
+      type="button"
+      onClick={() => setTapped((v) => !v)}
+      onBlur={() => setTapped(false)}
+      className="group relative inline-block w-fit cursor-default border-none bg-transparent p-0 text-left text-sm text-ink-foreground/35"
+    >
       {label}
-      <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-[#1a1a1e] px-2 py-1 text-[11px] text-ink-foreground/70 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+      <span
+        className={`pointer-events-none absolute left-1/2 top-full z-10 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-[#1a1a1e] px-2 py-1 text-[11px] text-ink-foreground/70 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${
+          tapped ? "opacity-100" : ""
+        }`}
+      >
         Скоро
       </span>
-    </span>
+    </button>
   );
 }
 
 export default function Footer() {
+  const { open } = usePrivacyModal();
+
   return (
     <footer className="mt-24 border-t border-white/8 px-7 pb-8 pt-14">
       <div className="mx-auto grid max-w-[1160px] grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-9">
@@ -36,9 +52,13 @@ export default function Footer() {
         <div>
           <h4 className="mb-3.5 text-[13px] uppercase tracking-[0.06em] text-ink-foreground/40">Информация</h4>
           <div className="flex flex-col gap-2 text-sm">
-            <Link href="/privacy" className="text-ink-foreground/60 no-underline hover:text-ink-foreground">
+            <button
+              type="button"
+              onClick={open}
+              className="border-none bg-transparent p-0 text-left text-sm text-ink-foreground/60 no-underline hover:text-ink-foreground"
+            >
               Политика конфиденциальности
-            </Link>
+            </button>
           </div>
         </div>
       </div>
