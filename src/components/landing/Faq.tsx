@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import Reveal from "@/components/landing/Reveal";
 import Spotlight from "@/components/landing/Spotlight";
 import { PlusMinusIcon } from "@/components/icons";
@@ -52,26 +51,9 @@ export default function Faq() {
                 {item.question}
                 <PlusMinusIcon open={isOpen} />
               </button>
-              <AnimatePresence>
-                {isOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    <motion.p
-                      initial={{ y: -8 }}
-                      animate={{ y: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="px-5 pb-[18px] text-sm leading-[1.6] text-ink-foreground/60"
-                    >
-                      {item.answer}
-                    </motion.p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {isOpen && (
+                <p className="px-5 pb-[18px] text-sm leading-[1.6] text-ink-foreground/60">{item.answer}</p>
+              )}
             </div>
           );
         })}
