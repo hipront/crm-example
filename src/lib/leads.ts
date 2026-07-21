@@ -49,36 +49,6 @@ export const COARSE_STATUS_COLORS: Record<CoarseStatus, string> = {
   rejected: "#f87171",
 };
 
-const TO_COARSE: Record<LeadStatus, CoarseStatus> = {
-  new: "new",
-  in_progress: "in_progress",
-  agreed: "in_progress",
-  paid: "in_progress",
-  shipped: "in_progress",
-  closed: "closed",
-  rejected: "rejected",
-};
-
-export function toCoarseStatus(status: LeadStatus): CoarseStatus {
-  return TO_COARSE[status];
-}
-
-const COARSE_DEFAULT: Record<CoarseStatus, LeadStatus> = {
-  new: "new",
-  in_progress: "in_progress",
-  closed: "closed",
-  rejected: "rejected",
-};
-
-export function fromCoarseStatus(coarse: CoarseStatus): LeadStatus {
-  return COARSE_DEFAULT[coarse];
-}
-
-// Назначение менеджера — сигнал, что по лиду начали работать.
-export function statusAfterAssign(current: LeadStatus): LeadStatus {
-  return current === "new" ? "in_progress" : current;
-}
-
 export const LEAD_STATUS_OPTIONS = LEAD_STATUSES.map((value) => ({
   value,
   label: LEAD_STATUS_LABELS[value],
@@ -97,16 +67,20 @@ export type Lead = {
   contact: string;
   message: string | null;
   status: LeadStatus;
+  pipeline_status: CoarseStatus;
   assigned_manager_id: string | null;
   painting_id: string | null;
   created_at: string;
   paintings: { title: string } | null;
 };
 
+const LEAD_COLUMNS =
+  "id, name, contact, message, status, pipeline_status, assigned_manager_id, painting_id, created_at, paintings(title)";
+
 export async function getLeads(supabase: SupabaseClient): Promise<Lead[]> {
   const { data, error } = await supabase
     .from("leads")
-    .select("id, name, contact, message, status, assigned_manager_id, painting_id, created_at, paintings(title)")
+    .select(LEAD_COLUMNS)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -119,7 +93,7 @@ export async function getLeads(supabase: SupabaseClient): Promise<Lead[]> {
 export async function getLeadById(supabase: SupabaseClient, id: string): Promise<Lead | null> {
   const { data, error } = await supabase
     .from("leads")
-    .select("id, name, contact, message, status, assigned_manager_id, painting_id, created_at, paintings(title)")
+    .select(LEAD_COLUMNS)
     .eq("id", id)
     .maybeSingle();
 
@@ -128,4 +102,10 @@ export async function getLeadById(supabase: SupabaseClient, id: string): Promise
   }
 
   return data as unknown as Lead | null;
+}
+
+// Назначение менеджера в "Лидах" — сигнал, что заявку взяли в работу.
+// Трогает только pipeline_status, не влияет на этап канбана (status).
+export function pipelineStatusAfterAssign(current: CoarseStatus): CoarseStatus {
+  return current === "new" ? "in_progress" : current;
 }

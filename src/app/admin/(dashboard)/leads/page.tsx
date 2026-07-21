@@ -25,7 +25,7 @@ export default async function LeadsPage() {
       initialLeads={leads}
       role={profile?.role ?? null}
       managers={managers}
-      paintings={paintings.map((p) => ({ id: p.id, title: p.title }))}
+      paintings={paintings}
     />
   );
 }

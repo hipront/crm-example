@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Trash2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { LEAD_STATUS_OPTIONS, statusAfterAssign, type Lead, type LeadStatus } from "@/lib/leads";
+import { LEAD_STATUS_OPTIONS, type Lead, type LeadStatus } from "@/lib/leads";
 import { updatePainting } from "@/lib/paintings";
 import StatusDropdown from "@/components/admin/StatusDropdown";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -57,18 +57,14 @@ export default function LeadDetailView({
   }
 
   async function assignManager(managerId: string | null) {
-    const previous = { assigned_manager_id: lead.assigned_manager_id, status: lead.status };
-    const status = managerId ? statusAfterAssign(lead.status) : lead.status;
-    setLead((l) => ({ ...l, assigned_manager_id: managerId, status }));
+    const previous = lead.assigned_manager_id;
+    setLead((l) => ({ ...l, assigned_manager_id: managerId }));
 
     const supabase = createClient();
-    const { error } = await supabase
-      .from("leads")
-      .update({ assigned_manager_id: managerId, status })
-      .eq("id", lead.id);
+    const { error } = await supabase.from("leads").update({ assigned_manager_id: managerId }).eq("id", lead.id);
 
     if (error) {
-      setLead((l) => ({ ...l, ...previous }));
+      setLead((l) => ({ ...l, assigned_manager_id: previous }));
       alert("Не удалось назначить менеджера");
     }
   }

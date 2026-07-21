@@ -2,18 +2,13 @@
 
 import Link from "next/link";
 import { X, ArrowRight } from "lucide-react";
-import { LEAD_STATUS_OPTIONS, type Lead, type LeadStatus } from "@/lib/leads";
-import StatusDropdown from "@/components/admin/StatusDropdown";
+import { COARSE_STATUS_COLORS, COARSE_STATUS_LABELS, type Lead } from "@/lib/leads";
 
 export default function LeadPreviewSheet({
   lead,
-  canEdit,
-  onChangeStatus,
   onClose,
 }: {
   lead: Lead;
-  canEdit: boolean;
-  onChangeStatus: (status: LeadStatus) => void;
   onClose: () => void;
 }) {
   return (
@@ -32,8 +27,12 @@ export default function LeadPreviewSheet({
           </button>
         </div>
 
-        <div className="mt-3">
-          <StatusDropdown value={lead.status} options={LEAD_STATUS_OPTIONS} onChange={onChangeStatus} disabled={!canEdit} />
+        <div className="mt-3 flex items-center gap-2 text-sm text-white/70">
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ backgroundColor: COARSE_STATUS_COLORS[lead.pipeline_status] }}
+          />
+          {COARSE_STATUS_LABELS[lead.pipeline_status]}
         </div>
 
         <div className="mt-5 space-y-4 text-sm">
@@ -59,7 +58,7 @@ export default function LeadPreviewSheet({
 
         <Link
           href={`/admin/leads/${lead.id}`}
-          className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-fuchsia-300 transition-colors hover:text-fuchsia-200"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-fuchsia-300 transition-colors hover:text-fuchsia-200"
         >
           Открыть полную карточку
           <ArrowRight className="h-3.5 w-3.5" />

@@ -7,15 +7,14 @@ import { createClient } from "@/lib/supabase/client";
 import {
   COARSE_STATUS_OPTIONS,
   COARSE_STATUS_LABELS,
-  fromCoarseStatus,
-  statusAfterAssign,
-  toCoarseStatus,
+  pipelineStatusAfterAssign,
   type CoarseStatus,
   type Lead,
 } from "@/lib/leads";
 import StatusDropdown from "@/components/admin/StatusDropdown";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import NewLeadModal from "@/components/admin/leads/NewLeadModal";
+import type { Painting } from "@/lib/paintings";
 
 const PERIODS = [
   { label: "30 дней", days: 30 },
@@ -45,7 +44,7 @@ export default function LeadsTable({
   initialLeads: Lead[];
   role: string | null;
   managers: { id: string; full_name: string | null }[];
-  paintings: { id: string; title: string }[];
+  paintings: Painting[];
 }) {
   const router = useRouter();
   const [leads, setLeads] = useState(initialLeads);
@@ -67,7 +66,7 @@ export default function LeadsTable({
   const isAdmin = role === "admin";
 
   function canEditLead(lead: Lead) {
-    return role !== "viewer" && (lead.status !== "closed" || isAdmin);
+    return role !== "viewer" && (lead.pipeline_status !== "closed" || isAdmin);
   }
 
   useEffect(() => {
@@ -87,7 +86,7 @@ export default function LeadsTable({
           const { data } = await supabase
             .from("leads")
             .select(
-              "id, name, contact, message, status, assigned_manager_id, painting_id, created_at, paintings(title)",
+              "id, name, contact, message, status, pipeline_status, assigned_manager_id, painting_id, created_at, paintings(title)",
             )
             .eq("id", payload.new.id)
             .single();
@@ -118,7 +117,7 @@ export default function LeadsTable({
     const toTime = dateTo ? new Date(dateTo).getTime() + 24 * 60 * 60 * 1000 : null;
 
     return leads.filter((l) => {
-      if (statusFilter !== "all" && toCoarseStatus(l.status) !== statusFilter) return false;
+      if (statusFilter !== "all" && l.pipeline_status !== statusFilter) return false;
       const createdAt = new Date(l.created_at).getTime();
       if (cutoff && createdAt < cutoff) return false;
       if (fromTime && createdAt < fromTime) return false;
@@ -160,28 +159,29 @@ export default function LeadsTable({
     });
   }
 
-  async function changeStatus(leadId: string, coarse: CoarseStatus) {
-    const status = fromCoarseStatus(coarse);
+  async function changeStatus(leadId: string, pipeline_status: CoarseStatus) {
     const previous = leads;
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status } : l)));
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, pipeline_status } : l)));
 
     const supabase = createClient();
-    const { error } = await supabase.from("leads").update({ status }).eq("id", leadId);
+    const { error } = await supabase.from("leads").update({ pipeline_status }).eq("id", leadId);
     if (error) setLeads(previous);
   }
 
   async function assignManager(leadId: string, managerId: string | null) {
     const lead = leads.find((l) => l.id === leadId);
     if (!lead) return;
-    const status = managerId ? statusAfterAssign(lead.status) : lead.status;
+    const pipeline_status = managerId ? pipelineStatusAfterAssign(lead.pipeline_status) : lead.pipeline_status;
 
     const previous = leads;
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, assigned_manager_id: managerId, status } : l)));
+    setLeads((prev) =>
+      prev.map((l) => (l.id === leadId ? { ...l, assigned_manager_id: managerId, pipeline_status } : l)),
+    );
 
     const supabase = createClient();
     const { error } = await supabase
       .from("leads")
-      .update({ assigned_manager_id: managerId, status })
+      .update({ assigned_manager_id: managerId, pipeline_status })
       .eq("id", leadId);
 
     if (error) {
@@ -222,7 +222,7 @@ export default function LeadsTable({
     setSelected(new Set());
   }
 
-  const newCount = leads.filter((l) => l.status === "new").length;
+  const newCount = leads.filter((l) => l.pipeline_status === "new").length;
 
   function exportCsv() {
     const header = ["Имя", "Контакт", "Картина", "Менеджер", "Статус", "Дата"];
@@ -233,7 +233,7 @@ export default function LeadsTable({
       l.assigned_manager_id
         ? managers.find((m) => m.id === l.assigned_manager_id)?.full_name || ""
         : "",
-      COARSE_STATUS_LABELS[toCoarseStatus(l.status)],
+      COARSE_STATUS_LABELS[l.pipeline_status],
       formatDate(l.created_at),
     ]);
 
@@ -381,9 +381,9 @@ export default function LeadsTable({
                     />
                   </td>
                 )}
-                <td className="px-3 py-3">
-                  <p className="font-medium text-white">{lead.name}</p>
-                  <p className="text-xs text-white/50">{lead.contact}</p>
+                <td className="max-w-[220px] px-3 py-3">
+                  <p className="break-words font-medium text-white">{lead.name}</p>
+                  <p className="break-words text-xs text-white/50">{lead.contact}</p>
                 </td>
                 <td className="px-3 py-3 text-white/70">{lead.paintings?.title ?? "—"}</td>
                 <td className="px-3 py-3">
@@ -410,7 +410,7 @@ export default function LeadsTable({
                 </td>
                 <td className="px-3 py-3" onDoubleClick={(e) => e.stopPropagation()}>
                   <StatusDropdown
-                    value={toCoarseStatus(lead.status)}
+                    value={lead.pipeline_status}
                     options={COARSE_STATUS_OPTIONS}
                     onChange={(status) => changeStatus(lead.id, status)}
                     disabled={!canEditLead(lead)}

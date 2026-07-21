@@ -82,7 +82,7 @@ export default function KanbanBoard({
           const { data } = await supabase
             .from("leads")
             .select(
-              "id, name, contact, message, status, assigned_manager_id, painting_id, created_at, paintings(title)",
+              "id, name, contact, message, status, pipeline_status, assigned_manager_id, painting_id, created_at, paintings(title)",
             )
             .eq("id", payload.new.id)
             .single();
@@ -215,12 +215,7 @@ export default function KanbanBoard({
         const previewLead = leads.find((l) => l.id === previewLeadId);
         if (!previewLead) return null;
         return (
-          <LeadPreviewSheet
-            lead={previewLead}
-            canEdit={canEditLead(previewLead)}
-            onChangeStatus={(status) => requestStatusChange(previewLead.id, status)}
-            onClose={() => setPreviewLeadId(null)}
-          />
+          <LeadPreviewSheet lead={previewLead} onClose={() => setPreviewLeadId(null)} />
         );
       })()}
     </DndContext>
