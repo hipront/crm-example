@@ -3,6 +3,16 @@
 import { X, ArchiveRestore } from "lucide-react";
 import { type Lead } from "@/lib/leads";
 
+function formatArchivedAt(iso: string) {
+  return new Date(iso).toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function ArchivePanel({
   leads,
   onRestore,
@@ -36,6 +46,9 @@ export default function ArchivePanel({
                 <div className="min-w-0">
                   <p className="truncate font-medium">{lead.name}</p>
                   {lead.paintings && <p className="truncate text-sm text-fuchsia-300">{lead.paintings.title}</p>}
+                  {lead.archived_at && (
+                    <p className="mt-0.5 text-xs text-white/40">В архиве с {formatArchivedAt(lead.archived_at)}</p>
+                  )}
                 </div>
                 <button
                   type="button"

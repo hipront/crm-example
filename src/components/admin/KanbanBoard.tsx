@@ -20,6 +20,13 @@ import Column from "@/components/admin/kanban/Column";
 import LeadPreviewSheet from "@/components/admin/kanban/LeadPreviewSheet";
 import ArchivePanel from "@/components/admin/kanban/ArchivePanel";
 
+const PERIODS = [
+  { label: "30 дней", days: 30 },
+  { label: "90 дней", days: 90 },
+  { label: "Год", days: 365 },
+  { label: "Все", days: null },
+] as const;
+
 export default function KanbanBoard({
   initialLeads,
   stages,
@@ -36,6 +43,8 @@ export default function KanbanBoard({
   const [highlighted, setHighlighted] = useState(highlightStatus ?? null);
   const [previewLeadId, setPreviewLeadId] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const [periodDays, setPeriodDays] = useState<number | null>(null);
+  const [cutoff, setCutoff] = useState<number | null>(null);
   const columnRefs = useRef<Partial<Record<string, HTMLDivElement>>>({});
   const canEdit = role !== "viewer";
   const router = useRouter();
@@ -69,7 +78,7 @@ export default function KanbanBoard({
           const { data } = await supabase
             .from("leads")
             .select(
-              "id, name, contact, message, status, pipeline_status, archived, assigned_manager_id, painting_id, created_at, paintings(title)",
+              "id, name, contact, message, status, pipeline_status, archived, archived_at, assigned_manager_id, painting_id, created_at, paintings(title)",
             )
             .eq("id", payload.new.id)
             .single();
@@ -115,13 +124,21 @@ export default function KanbanBoard({
   }
 
   async function setArchived(id: string, archived: boolean) {
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, archived } : l)));
+    const archived_at = archived ? new Date().toISOString() : null;
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, archived, archived_at } : l)));
     const supabase = createClient();
-    await supabase.from("leads").update({ archived }).eq("id", id);
+    await supabase.from("leads").update({ archived, archived_at }).eq("id", id);
   }
+
+  useEffect(() => {
+    setCutoff(periodDays ? Date.now() - periodDays * 24 * 60 * 60 * 1000 : null);
+  }, [periodDays]);
 
   const activeLead = leads.find((l) => l.id === activeId) ?? null;
   const archivedLeads = leads.filter((l) => l.archived);
+  const visibleLeads = leads.filter(
+    (l) => !l.archived && (!cutoff || new Date(l.created_at).getTime() >= cutoff),
+  );
 
   return (
     <DndContext
@@ -132,7 +149,23 @@ export default function KanbanBoard({
       onDragCancel={() => setActiveId(null)}
     >
       <div className="space-y-8">
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <div className="flex flex-wrap gap-1">
+            {PERIODS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => setPeriodDays(p.days)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  periodDays === p.days
+                    ? "bg-fuchsia-500/90 text-white"
+                    : "border border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             onClick={() => setShowArchive(true)}
@@ -151,7 +184,7 @@ export default function KanbanBoard({
             <Column
               key={stage.key}
               stage={stage}
-              leads={leads.filter((l) => l.status === stage.key && !l.archived)}
+              leads={visibleLeads.filter((l) => l.status === stage.key)}
               containerRef={(el) => {
                 columnRefs.current[stage.key] = el ?? undefined;
               }}

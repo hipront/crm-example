@@ -147,7 +147,7 @@ export default function NewLeadModal({
         painting_id: paintingId || null,
         message: message.trim() || null,
       })
-      .select("id, name, contact, message, status, pipeline_status, archived, assigned_manager_id, painting_id, created_at, paintings(title)")
+      .select("id, name, contact, message, status, pipeline_status, archived, archived_at, assigned_manager_id, painting_id, created_at, paintings(title)")
       .single();
 
     setSaving(false);

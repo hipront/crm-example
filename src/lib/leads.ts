@@ -38,6 +38,7 @@ export type Lead = {
   status: LeadStatus;
   pipeline_status: CoarseStatus;
   archived: boolean;
+  archived_at: string | null;
   assigned_manager_id: string | null;
   painting_id: string | null;
   created_at: string;
@@ -45,7 +46,7 @@ export type Lead = {
 };
 
 const LEAD_COLUMNS =
-  "id, name, contact, message, status, pipeline_status, archived, assigned_manager_id, painting_id, created_at, paintings(title)";
+  "id, name, contact, message, status, pipeline_status, archived, archived_at, assigned_manager_id, painting_id, created_at, paintings(title)";
 
 export async function getLeads(supabase: SupabaseClient): Promise<Lead[]> {
   const { data, error } = await supabase

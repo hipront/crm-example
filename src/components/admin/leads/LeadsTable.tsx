@@ -88,7 +88,7 @@ export default function LeadsTable({
           const { data } = await supabase
             .from("leads")
             .select(
-              "id, name, contact, message, status, pipeline_status, archived, assigned_manager_id, painting_id, created_at, paintings(title)",
+              "id, name, contact, message, status, pipeline_status, archived, archived_at, assigned_manager_id, painting_id, created_at, paintings(title)",
             )
             .eq("id", payload.new.id)
             .single();

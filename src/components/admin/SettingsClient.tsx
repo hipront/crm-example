@@ -161,7 +161,10 @@ function StageRow({
       />
 
       {leadCount > 0 && (
-        <span className="flex shrink-0 items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-xs text-amber-300">
+        <span
+          title={`На этом этапе сейчас ${leadCount} лид${leadCount === 1 ? "" : "ов"}`}
+          className="flex shrink-0 items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-xs text-amber-300"
+        >
           <Pin className="h-3 w-3" />
           {leadCount}
         </span>
