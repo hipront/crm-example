@@ -10,6 +10,11 @@ export const ROLE_LABELS: Record<Role, string> = {
   viewer: "Ридонли",
 };
 
+// Назначить через UI можно только эти роли — "admin" исключён намеренно:
+// новый admin может появиться только напрямую через БД (см. 0016-миграцию,
+// триггер prevent_role_self_escalation блокирует это и на уровне сервера).
+export const ASSIGNABLE_ROLES = ROLES.filter((r) => r !== "admin");
+
 export type Profile = {
   id: string;
   full_name: string | null;
@@ -68,5 +73,39 @@ export async function updateProfileActive(client: SupabaseClient, id: string, is
 
   if (error) {
     throw new Error(`Failed to update access: ${error.message}`);
+  }
+}
+
+export async function createEmployee(input: {
+  email: string;
+  password: string;
+  fullName: string;
+  role: Role;
+}): Promise<Profile> {
+  const response = await fetch("/api/admin/users", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  const body = (await response.json()) as { profile?: Profile; error?: string };
+
+  if (!response.ok || !body.profile) {
+    throw new Error(body.error ?? "Не удалось создать сотрудника");
+  }
+
+  return body.profile;
+}
+
+export async function deleteEmployee(id: string): Promise<void> {
+  const response = await fetch("/api/admin/users", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Не удалось удалить сотрудника");
   }
 }

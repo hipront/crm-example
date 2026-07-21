@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldOff, ShieldCheck } from "lucide-react";
+import { Plus, ShieldOff, ShieldCheck, Trash2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   ROLES,
+  ASSIGNABLE_ROLES,
   ROLE_LABELS,
+  deleteEmployee,
   updateProfileActive,
   updateProfileName,
   updateProfileRole,
@@ -13,6 +15,7 @@ import {
   type Role,
 } from "@/lib/profiles";
 import ConfirmModal from "@/components/admin/ConfirmModal";
+import AddEmployeeModal from "@/components/admin/AddEmployeeModal";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -31,6 +34,10 @@ export default function UsersManager({
   const [search, setSearch] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
   const [blockTarget, setBlockTarget] = useState<Profile | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
 
   const visible = profiles.filter((p) => {
     const q = search.trim().toLowerCase();
@@ -83,6 +90,22 @@ export default function UsersManager({
     }
   }
 
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deleteEmployee(deleteTarget.id);
+      setProfiles((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Не удалось удалить сотрудника");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex items-center justify-between gap-3">
@@ -93,9 +116,21 @@ export default function UsersManager({
           placeholder="Поиск по имени или email…"
           className="w-64 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-fuchsia-400"
         />
-        <p className="text-sm text-white/50">
-          {visible.length} из {profiles.length}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-white/50">
+            {visible.length} из {profiles.length}
+          </p>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setShowAdd(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Добавить сотрудника
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/5">
@@ -134,26 +169,40 @@ export default function UsersManager({
                 title={!canEdit ? undefined : isSelf ? "Нельзя изменить собственную роль" : undefined}
                 className="w-36 shrink-0 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15"
               >
-                {ROLES.map((r) => (
+                {(p.role === "admin" ? ROLES : ASSIGNABLE_ROLES).map((r) => (
                   <option key={r} value={r}>
                     {ROLE_LABELS[r]}
                   </option>
                 ))}
               </select>
               {canEdit && !isSelf && (
-                <button
-                  type="button"
-                  onClick={() => setBlockTarget(p)}
-                  className={`shrink-0 rounded-lg p-1.5 transition-colors ${
-                    p.is_active
-                      ? "text-white/40 hover:bg-red-500/10 hover:text-red-400"
-                      : "text-emerald-400/70 hover:bg-emerald-500/10 hover:text-emerald-400"
-                  }`}
-                  aria-label={p.is_active ? "Заблокировать" : "Разблокировать"}
-                  title={p.is_active ? "Заблокировать" : "Разблокировать"}
-                >
-                  {p.is_active ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setBlockTarget(p)}
+                    className={`shrink-0 rounded-lg p-1.5 transition-colors ${
+                      p.is_active
+                        ? "text-white/40 hover:bg-red-500/10 hover:text-red-400"
+                        : "text-emerald-400/70 hover:bg-emerald-500/10 hover:text-emerald-400"
+                    }`}
+                    aria-label={p.is_active ? "Заблокировать" : "Разблокировать"}
+                    title={p.is_active ? "Заблокировать" : "Разблокировать"}
+                  >
+                    {p.is_active ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeleteTarget(p);
+                    }}
+                    className="shrink-0 rounded-lg p-1.5 text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                    aria-label="Удалить сотрудника"
+                    title="Удалить безвозвратно"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </>
               )}
             </div>
           );
@@ -180,6 +229,40 @@ export default function UsersManager({
           confirmVariant={blockTarget.is_active ? "danger" : "brand"}
           onConfirm={() => handleToggleActive(blockTarget)}
           onCancel={() => setBlockTarget(null)}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Удалить сотрудника?"
+          message={
+            <>
+              Аккаунт «{deleteTarget.full_name || deleteTarget.email}» будет удалён безвозвратно — он больше не
+              сможет войти, даже с правильным паролем. Если нужно временно закрыть доступ и потом вернуть — лучше
+              использовать «Заблокировать».
+              {deleting && (
+                <span className="mt-2 flex items-center gap-1.5 text-white/50">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Удаляем…
+                </span>
+              )}
+              {deleteError && <span className="mt-2 block text-red-400">{deleteError}</span>}
+            </>
+          }
+          confirmLabel="Удалить"
+          confirmDisabled={deleting}
+          confirmVariant="danger"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {showAdd && (
+        <AddEmployeeModal
+          onCreated={(profile) => {
+            setProfiles((prev) => [...prev, profile]);
+            setShowAdd(false);
+          }}
+          onClose={() => setShowAdd(false)}
         />
       )}
     </div>
