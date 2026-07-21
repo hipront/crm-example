@@ -280,6 +280,20 @@
   }
 }
 
+/* Экспорт «Аналитики» в PDF через печать браузера: по умолчанию Chrome/
+   Firefox не печатают фоновые цвета/градиенты страницы, если в диалоге
+   печати не включена галочка «Фоновые рисунки» — получается пустая белая
+   страница без темы. print-color-adjust заставляет браузер печатать цвета
+   как на экране, без ручных действий пользователя в диалоге печати. */
+@media print {
+  html,
+  body,
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

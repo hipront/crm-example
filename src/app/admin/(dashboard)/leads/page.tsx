@@ -4,7 +4,11 @@ import { getManagers } from "@/lib/profiles";
 import { getAllPaintings } from "@/lib/paintings";
 import LeadsTable from "@/components/admin/leads/LeadsTable";
 
-export default async function LeadsPage() {
+export default async function LeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pipeline?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,6 +23,7 @@ export default async function LeadsPage() {
   const leads = await getLeads(supabase);
   const managers = await getManagers(supabase);
   const paintings = await getAllPaintings(supabase);
+  const { pipeline } = await searchParams;
 
   return (
     <LeadsTable
@@ -26,6 +31,7 @@ export default async function LeadsPage() {
       role={profile?.role ?? null}
       managers={managers}
       paintings={paintings}
+      initialPipelineFilter={pipeline}
     />
   );
 }

@@ -5,9 +5,11 @@ import type { StaleLead } from "@/lib/analytics";
 export default function StaleLeadsPanel({
   staleLeads,
   onSelect,
+  noScroll = false,
 }: {
   staleLeads: StaleLead[];
   onSelect: (status: string) => void;
+  noScroll?: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-red-500/25 bg-red-500/5 p-5">
@@ -17,7 +19,7 @@ export default function StaleLeadsPanel({
       </div>
       <p className="mb-3.5 text-xs text-red-300/70">Без движения 3+ дня</p>
 
-      <div className="flex max-h-[220px] flex-col gap-1.5 overflow-y-auto pr-1">
+      <div className={`flex flex-col gap-1.5 pr-1 ${noScroll ? "" : "max-h-[220px] overflow-y-auto"}`}>
         {staleLeads.map((l) => (
           <button
             key={l.id}

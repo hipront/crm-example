@@ -2,12 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BarChart3, ChevronDown, Target, Users, Wallet } from "lucide-react";
 import { computeAnalytics, type PeriodFilter, type RawLead, type RawProfile } from "@/lib/analytics";
 import type { LeadStage } from "@/lib/stages";
-import LeadsMiniList from "@/components/admin/analytics/LeadsMiniList";
-import PeriodFilter_, { type CustomRange, type Period } from "@/components/admin/analytics/PeriodFilter";
-import FunnelChart from "@/components/admin/analytics/FunnelChart";
+import KpiTile from "@/components/admin/analytics/KpiTile";
+import StatusDonut from "@/components/admin/analytics/StatusDonut";
+import StageDistribution from "@/components/admin/analytics/StageDistribution";
 import StaleLeadsPanel from "@/components/admin/analytics/StaleLeadsPanel";
+import ManagersRevenueTable from "@/components/admin/analytics/ManagersRevenueTable";
+import PeriodFilter_, { type CustomRange, type Period } from "@/components/admin/analytics/PeriodFilter";
+import ExportPdfButton from "@/components/admin/analytics/ExportPdfButton";
 
 function rub(n: number) {
   return n.toLocaleString("ru-RU") + " ₽";
@@ -35,79 +39,6 @@ function trendPct(curr: number, prev: number): number | null {
   return Math.round(((curr - prev) / prev) * 100);
 }
 
-function StatTile({
-  label,
-  value,
-  sublabel,
-  trend,
-}: {
-  label: string;
-  value: string;
-  sublabel?: string;
-  trend?: number | null;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-white/50">{label}</p>
-        {trend != null && (
-          <span className={`text-xs font-semibold ${trend >= 0 ? "text-emerald-300" : "text-red-300"}`}>
-            {trend >= 0 ? "+" : ""}
-            {trend}%
-          </span>
-        )}
-      </div>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
-      {sublabel && <p className="mt-1 text-xs text-white/40">{sublabel}</p>}
-    </div>
-  );
-}
-
-function BarRow({
-  label,
-  value,
-  valueLabel,
-  maxValue,
-  title,
-  open,
-  onToggle,
-  children,
-}: {
-  label: string;
-  value: number;
-  valueLabel: string;
-  maxValue: number;
-  title: string;
-  open: boolean;
-  onToggle: () => void;
-  children?: React.ReactNode;
-}) {
-  const pct = maxValue > 0 ? Math.max((value / maxValue) * 100, value > 0 ? 3 : 0) : 0;
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={onToggle}
-        title={title}
-        className="flex w-full items-center gap-3 rounded-lg px-1 py-1.5 text-left transition-colors hover:bg-white/5"
-      >
-        <span className={`shrink-0 text-white/30 transition-transform ${open ? "rotate-90" : ""}`} aria-hidden>
-          ›
-        </span>
-        <span className="w-28 shrink-0 truncate text-sm text-white/70">{label}</span>
-        <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
-          <div
-            className="h-full rounded-full bg-cyan-400 transition-[width] duration-500"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <span className="min-w-[90px] shrink-0 text-right text-sm tabular-nums text-white/80">{valueLabel}</span>
-      </button>
-      {open && <div className="mb-1 ml-7 mt-1">{children}</div>}
-    </div>
-  );
-}
-
 export default function AnalyticsDashboard({
   rawLeads,
   rawProfiles,
@@ -120,7 +51,8 @@ export default function AnalyticsDashboard({
   const router = useRouter();
   const [period, setPeriod] = useState<Period | null>("month");
   const [customRange, setCustomRange] = useState<CustomRange>(null);
-  const [openManager, setOpenManager] = useState<string | null>(null);
+  const [stagesOpen, setStagesOpen] = useState(() => typeof window === "undefined" || window.innerWidth >= 768);
+  const [exportMode, setExportMode] = useState(false);
 
   const filter = useMemo(() => periodToFilter(period, customRange), [period, customRange]);
   const data = useMemo(
@@ -138,98 +70,128 @@ export default function AnalyticsDashboard({
     router.push(`/admin/kanban?status=${status}`);
   }
 
-  const maxRevenue = Math.max(...data.revenueByManager.map((m) => m.revenue), 1);
+  function goToLeads(pipelineStatus: string) {
+    router.push(`/admin/leads?pipeline=${pipelineStatus}`);
+  }
+
+  async function handleExportPdf() {
+    const wasStagesOpen = stagesOpen;
+    setStagesOpen(true);
+    setExportMode(true);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    window.print();
+
+    setExportMode(false);
+    setStagesOpen(wasStagesOpen);
+  }
 
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-lg font-semibold">Показатели</h2>
-        <PeriodFilter_
-          period={period}
-          customRange={customRange}
-          onPeriodChange={(p) => {
-            setPeriod(p);
-            setCustomRange(null);
-          }}
-          onCustomRangeChange={(range) => {
-            setCustomRange(range);
-            if (range) setPeriod(null);
-          }}
-        />
+        <div>
+          <h2 className="text-lg font-semibold">Показатели</h2>
+          <p className="mt-1 hidden text-xs text-white/40 print:block">
+            Период: {period === "week" ? "Неделя" : period === "month" ? "Месяц" : period === "all" ? "Всё время" : "свой диапазон"}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 print:hidden">
+          <PeriodFilter_
+            period={period}
+            customRange={customRange}
+            onPeriodChange={(p) => {
+              setPeriod(p);
+              setCustomRange(null);
+            }}
+            onCustomRangeChange={(range) => {
+              setCustomRange(range);
+              if (range) setPeriod(null);
+            }}
+          />
+          <ExportPdfButton onExport={handleExportPdf} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
+        <KpiTile
+          icon={Users}
           label="Всего лидов"
           value={String(data.totalLeads)}
+          sublabel={period === "week" ? "за неделю" : period === "month" ? "за месяц" : "за период"}
           trend={prevData ? trendPct(data.totalLeads, prevData.totalLeads) : null}
+          spark={data.kpiSparklines.total}
+          color="#e879f9"
         />
-        <StatTile
-          label="Конверсия"
+        <KpiTile
+          icon={Target}
+          label="Конверсия в продажу"
           value={`${Math.round(data.conversionRate * 100)}%`}
-          sublabel={`${data.convertedCount} из ${data.totalLeads} (без отказов)`}
+          sublabel={`${data.convertedCount} из ${data.totalLeads}`}
           trend={
             prevData ? trendPct(Math.round(data.conversionRate * 100), Math.round(prevData.conversionRate * 100)) : null
           }
+          spark={data.kpiSparklines.conversion}
+          color="#22d3ee"
         />
-        <StatTile
+        <KpiTile
+          icon={Wallet}
           label="Выручка"
           value={rub(data.totalRevenue)}
-          sublabel="оплачен + отправлен + закрыт"
+          sublabel="завершённые сделки"
           trend={prevData ? trendPct(data.totalRevenue, prevData.totalRevenue) : null}
+          spark={data.kpiSparklines.revenue}
+          color="#4ade80"
         />
-        <StatTile
-          label="Зависшие лиды"
-          value={String(data.staleLeads.length)}
-          sublabel="без обновления 3+ дня"
+        <KpiTile
+          icon={BarChart3}
+          label="Средний чек"
+          value={rub(Math.round(data.avgCheck))}
+          sublabel="на одну сделку"
+          spark={data.kpiSparklines.avgCheck}
+          color="rgba(255,255,255,.55)"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr] lg:items-start">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <div className="mb-1.5 flex items-center gap-2">
-            <span className="h-2 w-2 shrink-0 rounded-sm bg-purple-500" />
-            <h3 className="text-sm font-medium text-white/80">Воронка по статусам</h3>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr] lg:items-stretch">
+        <div className="rounded-2xl border border-fuchsia-400/25 bg-[radial-gradient(120%_140%_at_0%_0%,rgba(232,121,249,.09),rgba(255,255,255,.03)_55%)] p-6">
+          <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-base font-bold text-white">Статусы сделок</h3>
+            <span className="text-[11.5px] italic text-white/40">
+              Распределение лидов по исходу — стабильные статусы, сравнимы между периодами
+            </span>
           </div>
-          <p className="mb-4 text-xs text-white/40">Клик по столбцу — открыть список в Канбане</p>
-          <FunnelChart funnel={data.funnel} onSelect={goToKanban} />
+          <div className="mt-4">
+            <StatusDonut steps={data.pipeline} total={data.totalLeads} onSelect={goToLeads} />
+          </div>
         </div>
 
-        <StaleLeadsPanel staleLeads={data.staleLeads} onSelect={goToKanban} />
+        <StaleLeadsPanel staleLeads={data.staleLeads} onSelect={goToKanban} noScroll={exportMode} />
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <span className="h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
-          <h3 className="text-sm font-medium text-white/80">Выручка по менеджерам</h3>
-        </div>
-        {data.revenueByManager.length === 0 ? (
-          <p className="text-sm text-white/40">Пока нет оплаченных/закрытых сделок</p>
-        ) : (
-          <div className="space-y-1">
-            {data.revenueByManager.map((m) => {
-              const key = m.managerId ?? "unassigned";
-              return (
-                <BarRow
-                  key={key}
-                  label={m.managerName}
-                  value={m.revenue}
-                  valueLabel={rub(m.revenue)}
-                  maxValue={maxRevenue}
-                  title={`${m.managerName}: ${rub(m.revenue)}, ${m.dealCount} сделок — нажмите, чтобы посмотреть`}
-                  open={openManager === key}
-                  onToggle={() => setOpenManager((s) => (s === key ? null : key))}
-                >
-                  <LeadsMiniList
-                    leads={data.leads.filter(
-                      (l) => (l.managerId ?? "unassigned") === key && ["paid", "shipped", "closed"].includes(l.status),
-                    )}
-                  />
-                </BarRow>
-              );
-            })}
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <button
+          type="button"
+          onClick={() => setStagesOpen((o) => !o)}
+          className="flex w-full flex-wrap items-center justify-between gap-2 text-left"
+        >
+          <div className="flex items-center gap-2.5">
+            <h3 className="text-sm font-medium text-white/85">По этапам доски (сейчас)</h3>
+            <span className="text-[11px] italic text-white/35">
+              Оперативный срез — не воронка конверсии, этапы настраиваются в Настройках
+            </span>
+          </div>
+          <ChevronDown className={`h-4 w-4 shrink-0 text-white/50 transition-transform ${stagesOpen ? "rotate-180" : ""}`} />
+        </button>
+        {(stagesOpen || exportMode) && (
+          <div className="mt-4">
+            <StageDistribution buckets={data.stageDistribution} onSelect={goToKanban} noScroll={exportMode} />
           </div>
         )}
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <h3 className="mb-4 text-sm font-medium text-white/85">Выручка по менеджерам</h3>
+        <ManagersRevenueTable managers={data.revenueByManager} leads={data.leads} forceExpandAll={exportMode} />
       </div>
     </div>
   );

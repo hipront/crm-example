@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-black text-white md:flex">
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-white/10 md:flex md:sticky md:top-0 md:h-screen">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-white/10 md:flex md:sticky md:top-0 md:h-screen print:hidden">
         <div className="border-b border-white/10 px-5 py-5">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-fuchsia-500 via-purple-500 to-cyan-400 text-xs font-bold text-black">
@@ -59,8 +59,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1 px-6 pb-24 pt-10 md:pb-10">
-        <div className="flex items-center justify-between md:hidden">
+      <div className="min-w-0 flex-1 px-6 pb-24 pt-10 md:pb-10 print:p-0">
+        <div className="flex items-center justify-between md:hidden print:hidden">
           <div>
             <h1 className="text-xl font-semibold">Дашборд</h1>
             <p className="mt-1 text-sm text-white/60">роль: {profile?.role ?? "не назначена"}</p>
@@ -71,7 +71,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="mt-6 md:mt-0">{children}</div>
       </div>
 
-      <AdminMobileNav role={profile?.role ?? null} />
+      <div className="print:hidden">
+        <AdminMobileNav role={profile?.role ?? null} />
+      </div>
 
       <NameOnboardingModal userId={user!.id} hasName={Boolean(profile?.full_name)} />
     </div>
