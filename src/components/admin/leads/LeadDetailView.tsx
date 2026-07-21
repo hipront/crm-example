@@ -3,12 +3,43 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Trash2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { type Lead, type LeadStatus } from "@/lib/leads";
 import type { LeadStage } from "@/lib/stages";
+import type { Task } from "@/lib/tasks";
+import type { HistoryEntry } from "@/lib/history";
+import type { Profile } from "@/lib/profiles";
 import StatusDropdown from "@/components/admin/StatusDropdown";
+import ManagerDropdown from "@/components/admin/ManagerDropdown";
 import ConfirmModal from "@/components/admin/ConfirmModal";
+import TaskList from "@/components/admin/leads/TaskList";
+import LeadHistory from "@/components/admin/leads/LeadHistory";
+
+function CollapsibleSection({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <p className="text-xs text-white/40">{title}</p>
+        <ChevronDown className={`h-4 w-4 text-white/40 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && <div className="mt-2">{children}</div>}
+    </div>
+  );
+}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("ru-RU", {
@@ -25,11 +56,19 @@ export default function LeadDetailView({
   role,
   managers,
   stages,
+  initialTasks,
+  history,
+  profiles,
+  currentUserId,
 }: {
   initialLead: Lead;
   role: string | null;
   managers: { id: string; full_name: string | null }[];
   stages: LeadStage[];
+  initialTasks: Task[];
+  history: HistoryEntry[];
+  profiles: Profile[];
+  currentUserId: string;
 }) {
   const [lead, setLead] = useState(initialLead);
   const [deleting, setDeleting] = useState(false);
@@ -134,18 +173,13 @@ export default function LeadDetailView({
         <div>
           <p className="text-xs text-white/40">Менеджер</p>
           {canAssignManager ? (
-            <select
-              value={lead.assigned_manager_id ?? ""}
-              onChange={(e) => assignManager(e.target.value || null)}
-              className="mt-1 w-full rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400"
-            >
-              <option value="">Не назначен</option>
-              {managers.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.full_name || "Без имени"}
-                </option>
-              ))}
-            </select>
+            <div className="mt-1">
+              <ManagerDropdown
+                value={lead.assigned_manager_id}
+                managers={managers}
+                onChange={assignManager}
+              />
+            </div>
           ) : (
             <p className="mt-1 text-sm text-white/90">
               {lead.assigned_manager_id
@@ -162,6 +196,18 @@ export default function LeadDetailView({
           <p className="mt-1 whitespace-pre-wrap text-sm text-white/70">{lead.message}</p>
         </div>
       )}
+
+      <TaskList
+        leadId={lead.id}
+        leadName={lead.name}
+        initialTasks={initialTasks}
+        profiles={profiles}
+        currentUserId={currentUserId}
+      />
+
+      <CollapsibleSection title="История" defaultOpen={false}>
+        <LeadHistory entries={history} stages={stages} />
+      </CollapsibleSection>
 
       {confirmDelete && (
         <ConfirmModal

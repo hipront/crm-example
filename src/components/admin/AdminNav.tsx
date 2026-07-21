@@ -9,6 +9,7 @@ import {
   Palette,
   Users,
   Settings,
+  CheckSquare,
 } from "lucide-react";
 
 type Role = "manager" | "rop" | "admin" | "viewer";
@@ -17,6 +18,7 @@ type Tab = { href: string; label: string; roles?: Role[]; Icon: typeof LayoutGri
 const TABS: Tab[] = [
   { href: "/admin/leads", label: "Лиды", Icon: ClipboardList },
   { href: "/admin/kanban", label: "CRM", Icon: LayoutGrid },
+  { href: "/admin/tasks", label: "Задачи", Icon: CheckSquare },
   { href: "/admin/analytics", label: "Аналитика", roles: ["rop", "admin", "viewer"], Icon: BarChart3 },
   { href: "/admin/catalog", label: "Каталог", roles: ["admin", "viewer"], Icon: Palette },
   { href: "/admin/users", label: "Пользователи", roles: ["admin", "viewer"], Icon: Users },
