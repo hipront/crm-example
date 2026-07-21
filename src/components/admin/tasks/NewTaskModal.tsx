@@ -10,6 +10,7 @@ import { ChevronDown, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createTask, TASK_TYPE_LABELS, TASK_TYPES, type TaskType, type TaskWithLead } from "@/lib/tasks";
 import type { Profile } from "@/lib/profiles";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 function LeadPicker({
   leads,
@@ -105,6 +106,7 @@ export default function NewTaskModal({
   onCreated: (task: TaskWithLead) => void;
   onClose: () => void;
 }) {
+  useLockBodyScroll();
   const [leadId, setLeadId] = useState(fixedLead?.id ?? "");
   const [assigneeId, setAssigneeId] = useState(currentUserId);
   const [type, setType] = useState<TaskType>("call");
@@ -145,7 +147,7 @@ export default function NewTaskModal({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/70 p-4 py-10 backdrop-blur-sm">
       <form
         onSubmit={submit}
         className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0e0c12] p-5 shadow-2xl"

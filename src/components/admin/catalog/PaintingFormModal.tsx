@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 export type FormState = {
   id: string | null;
@@ -40,10 +41,11 @@ export default function PaintingFormModal({
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  useLockBodyScroll();
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 py-10 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/70 p-4 py-10 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

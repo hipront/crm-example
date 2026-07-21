@@ -108,13 +108,13 @@ export default function UsersManager({
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Поиск по имени или email…"
-          className="w-64 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-fuchsia-400"
+          className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-fuchsia-400 sm:w-64"
         />
         <div className="flex items-center gap-3">
           <p className="text-sm text-white/50">
@@ -137,7 +137,10 @@ export default function UsersManager({
         {visible.map((p) => {
           const isSelf = p.id === currentUserId;
           return (
-            <div key={p.id} className={`flex items-center gap-4 p-4 ${!p.is_active ? "opacity-50" : ""}`}>
+            <div
+              key={p.id}
+              className={`flex flex-col gap-3 p-4 transition-colors hover:bg-white/[0.04] sm:flex-row sm:items-center sm:gap-4 ${!p.is_active ? "opacity-50" : ""}`}
+            >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <input
@@ -159,51 +162,54 @@ export default function UsersManager({
                 </div>
                 <p className="truncate px-1.5 text-sm text-white/50">{p.email || "—"}</p>
               </div>
-              <span className="hidden shrink-0 text-xs text-white/30 sm:block">
-                с {formatDate(p.created_at)}
-              </span>
-              <select
-                value={p.role}
-                disabled={!canEdit || isSelf || savingId === p.id}
-                onChange={(e) => handleRoleChange(p.id, e.target.value as Role)}
-                title={!canEdit ? undefined : isSelf ? "Нельзя изменить собственную роль" : undefined}
-                className="w-36 shrink-0 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15"
-              >
-                {(p.role === "admin" ? ROLES : ASSIGNABLE_ROLES).map((r) => (
-                  <option key={r} value={r}>
-                    {ROLE_LABELS[r]}
-                  </option>
-                ))}
-              </select>
-              {canEdit && !isSelf && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setBlockTarget(p)}
-                    className={`shrink-0 rounded-lg p-1.5 transition-colors ${
-                      p.is_active
-                        ? "text-white/40 hover:bg-red-500/10 hover:text-red-400"
-                        : "text-emerald-400/70 hover:bg-emerald-500/10 hover:text-emerald-400"
-                    }`}
-                    aria-label={p.is_active ? "Заблокировать" : "Разблокировать"}
-                    title={p.is_active ? "Заблокировать" : "Разблокировать"}
-                  >
-                    {p.is_active ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeleteError(null);
-                      setDeleteTarget(p);
-                    }}
-                    className="shrink-0 rounded-lg p-1.5 text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                    aria-label="Удалить сотрудника"
-                    title="Удалить безвозвратно"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </>
-              )}
+
+              <div className="flex items-center justify-between gap-2 sm:shrink-0 sm:justify-end sm:gap-3">
+                <span className="hidden shrink-0 text-xs text-white/30 sm:block">
+                  с {formatDate(p.created_at)}
+                </span>
+                <select
+                  value={p.role}
+                  disabled={!canEdit || isSelf || savingId === p.id}
+                  onChange={(e) => handleRoleChange(p.id, e.target.value as Role)}
+                  title={!canEdit ? undefined : isSelf ? "Нельзя изменить собственную роль" : undefined}
+                  className="w-32 shrink-0 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15 sm:w-36"
+                >
+                  {(p.role === "admin" ? ROLES : ASSIGNABLE_ROLES).map((r) => (
+                    <option key={r} value={r}>
+                      {ROLE_LABELS[r]}
+                    </option>
+                  ))}
+                </select>
+                {canEdit && !isSelf && (
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setBlockTarget(p)}
+                      className={`shrink-0 rounded-lg p-1.5 transition-colors ${
+                        p.is_active
+                          ? "text-white/40 hover:bg-red-500/10 hover:text-red-400"
+                          : "text-emerald-400/70 hover:bg-emerald-500/10 hover:text-emerald-400"
+                      }`}
+                      aria-label={p.is_active ? "Заблокировать" : "Разблокировать"}
+                      title={p.is_active ? "Заблокировать" : "Разблокировать"}
+                    >
+                      {p.is_active ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteError(null);
+                        setDeleteTarget(p);
+                      }}
+                      className="shrink-0 rounded-lg p-1.5 text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                      aria-label="Удалить сотрудника"
+                      title="Удалить безвозвратно"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

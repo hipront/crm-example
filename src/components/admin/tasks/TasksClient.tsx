@@ -13,6 +13,7 @@ import {
 } from "@/lib/tasks";
 import { ROLE_LABELS, type Profile } from "@/lib/profiles";
 import NewTaskModal from "@/components/admin/tasks/NewTaskModal";
+import TaskLeadPreview from "@/components/admin/tasks/TaskLeadPreview";
 
 function formatDue(iso: string) {
   return new Date(iso).toLocaleString("ru-RU", {
@@ -43,6 +44,7 @@ export default function TasksClient({
   currentUserId: string;
 }) {
   const [tasks, setTasks] = useState(initialTasks);
+  const [previewTask, setPreviewTask] = useState<TaskWithLead | null>(null);
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [tab, setTab] = useState<"active" | "overdue" | "archive">("active");
@@ -119,8 +121,8 @@ export default function TasksClient({
         </button>
       </div>
 
-      <div className="mt-4 flex gap-6">
-        <aside className="w-60 shrink-0 rounded-2xl border border-white/10 bg-white/5 p-4">
+      <div className="mt-4 flex flex-col gap-6 md:flex-row">
+        <aside className="w-full shrink-0 rounded-2xl border border-white/10 bg-white/5 p-4 md:w-60">
           <p className="text-sm font-semibold text-white">Сотрудники</p>
           <p className="mt-0.5 text-xs text-white/40">Фильтр задач по исполнителю</p>
 
@@ -177,7 +179,7 @@ export default function TasksClient({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-full border border-white/15 p-0.5">
+            <div className="inline-flex flex-wrap rounded-full border border-white/15 p-0.5">
               <button
                 type="button"
                 onClick={() => setTab("active")}
@@ -231,20 +233,20 @@ export default function TasksClient({
                 </option>
               ))}
             </select>
-            <div className="flex items-center gap-1.5 text-sm text-white/40">
-              <span>Срок:</span>
+            <div className="flex flex-wrap items-center gap-1.5 text-sm text-white/40">
+              <span className="shrink-0">Срок:</span>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 [color-scheme:dark]"
+                className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 [color-scheme:dark]"
               />
-              <span>–</span>
+              <span className="shrink-0">–</span>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 [color-scheme:dark]"
+                className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 [color-scheme:dark]"
               />
               {(dateFrom || dateTo) && (
                 <button
@@ -254,7 +256,7 @@ export default function TasksClient({
                     setDateTo("");
                   }}
                   title="Сбросить срок"
-                  className="text-white/40 transition-colors hover:text-white"
+                  className="shrink-0 text-white/40 transition-colors hover:text-white"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -268,15 +270,20 @@ export default function TasksClient({
               return (
                 <div
                   key={task.id}
-                  className={`flex items-center gap-3 rounded-xl border px-3.5 py-3 ${
-                    isOverdue(task) ? "border-red-400/30 bg-red-400/5" : "border-white/10 bg-white/[0.03]"
+                  onClick={() => setPreviewTask(task)}
+                  title="Клик — превью лида"
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors ${
+                    isOverdue(task)
+                      ? "border-red-400/30 bg-red-400/5 hover:bg-red-400/10"
+                      : "border-white/10 bg-white/[0.03] hover:bg-white/[0.07]"
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={task.done}
                     onChange={() => toggleDone(task)}
-                    className="shrink-0 accent-fuchsia-500"
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -299,7 +306,10 @@ export default function TasksClient({
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeTask(task.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeTask(task.id);
+                    }}
                     className="shrink-0 text-white/30 transition-colors hover:text-red-400"
                     aria-label="Удалить задачу"
                   >
@@ -325,6 +335,8 @@ export default function TasksClient({
           onClose={() => setShowNew(false)}
         />
       )}
+
+      {previewTask && <TaskLeadPreview task={previewTask} onClose={() => setPreviewTask(null)} />}
     </div>
   );
 }

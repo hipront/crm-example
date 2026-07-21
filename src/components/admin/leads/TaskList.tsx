@@ -83,15 +83,17 @@ export default function TaskList({
           {tasks.map((task) => (
             <div
               key={task.id}
-              className={`flex items-center gap-2.5 rounded-lg border px-2.5 py-2 ${
-                isOverdue(task) ? "border-red-400/30 bg-red-400/5" : "border-white/10 bg-white/[0.02]"
+              className={`flex items-center gap-2.5 rounded-lg border px-2.5 py-2 transition-colors ${
+                isOverdue(task)
+                  ? "border-red-400/30 bg-red-400/5 hover:bg-red-400/10"
+                  : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
               }`}
             >
               <input
                 type="checkbox"
                 checked={task.done}
                 onChange={() => toggleDone(task)}
-                className="shrink-0 accent-fuchsia-500"
+                className="h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500"
               />
               <div className="min-w-0 flex-1">
                 <p className={`truncate text-sm ${task.done ? "text-white/40 line-through" : "text-white/90"}`}>

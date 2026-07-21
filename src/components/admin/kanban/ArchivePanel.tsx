@@ -1,7 +1,8 @@
 "use client";
 
 import { X, ArchiveRestore } from "lucide-react";
-import { type Lead } from "@/lib/leads";
+import { COARSE_STATUS_COLORS, COARSE_STATUS_LABELS, type Lead } from "@/lib/leads";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 function formatArchivedAt(iso: string) {
   return new Date(iso).toLocaleString("ru-RU", {
@@ -22,6 +23,8 @@ export default function ArchivePanel({
   onRestore: (leadId: string) => void;
   onClose: () => void;
 }) {
+  useLockBodyScroll();
+
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} />
@@ -41,10 +44,21 @@ export default function ArchivePanel({
         <div className="mt-4 flex-1 space-y-2 overflow-y-auto">
           {leads.length === 0 && <p className="text-sm text-white/40">Архив пуст.</p>}
           {leads.map((lead) => (
-            <div key={lead.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+            <div key={lead.id} className="rounded-xl border border-white/10 bg-white/5 p-3 transition-colors hover:bg-white/[0.07]">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{lead.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="truncate font-medium">{lead.name}</p>
+                    <span
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                      style={{
+                        color: COARSE_STATUS_COLORS[lead.pipeline_status],
+                        backgroundColor: `${COARSE_STATUS_COLORS[lead.pipeline_status]}1a`,
+                      }}
+                    >
+                      {COARSE_STATUS_LABELS[lead.pipeline_status]}
+                    </span>
+                  </div>
                   {lead.paintings && <p className="truncate text-sm text-fuchsia-300">{lead.paintings.title}</p>}
                   {lead.archived_at && (
                     <p className="mt-0.5 text-xs text-white/40">В архиве с {formatArchivedAt(lead.archived_at)}</p>

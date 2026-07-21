@@ -22,11 +22,18 @@ export type Task = {
 };
 
 export type TaskWithLead = Task & {
-  leads: { id: string; name: string } | null;
+  leads: {
+    id: string;
+    name: string;
+    contact: string;
+    message: string | null;
+    pipeline_status: "new" | "in_progress" | "closed" | "rejected";
+    paintings: { title: string } | null;
+  } | null;
 };
 
 const TASK_COLUMNS = "id, lead_id, description, due_at, done, type, assignee_id, created_at";
-const TASK_COLUMNS_WITH_LEAD = `${TASK_COLUMNS}, leads(id, name)`;
+const TASK_COLUMNS_WITH_LEAD = `${TASK_COLUMNS}, leads(id, name, contact, message, pipeline_status, paintings(title))`;
 
 export async function getTasksForLead(client: SupabaseClient, leadId: string): Promise<Task[]> {
   const { data, error } = await client

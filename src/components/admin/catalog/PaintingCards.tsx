@@ -49,8 +49,10 @@ export default function PaintingCards({
         {paintings.map((p) => (
           <div
             key={p.id}
-            className={`rounded-2xl border p-4 ${
-              p.is_available ? "border-white/10 bg-white/5" : "border-white/5 bg-white/[0.02]"
+            className={`rounded-2xl border p-4 transition-colors ${
+              p.is_available
+                ? "border-white/10 bg-white/5 hover:bg-white/[0.07]"
+                : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]"
             }`}
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -102,7 +104,10 @@ export default function PaintingCards({
   return (
     <div className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/5">
       {paintings.map((p) => (
-        <div key={p.id} className={`flex items-center gap-4 p-3 ${p.is_available ? "" : "opacity-70"}`}>
+        <div
+          key={p.id}
+          className={`flex items-center gap-4 p-3 transition-colors hover:bg-white/[0.04] ${p.is_available ? "" : "opacity-70"}`}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={p.image_url}

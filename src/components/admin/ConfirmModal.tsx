@@ -1,5 +1,7 @@
 "use client";
 
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
+
 export default function ConfirmModal({
   title,
   message,
@@ -17,6 +19,8 @@ export default function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  useLockBodyScroll();
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"

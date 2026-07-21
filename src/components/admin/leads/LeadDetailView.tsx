@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ChevronDown, Trash2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { type Lead, type LeadStatus } from "@/lib/leads";
+import { COARSE_STATUS_OPTIONS, type CoarseStatus, type Lead, type LeadStatus } from "@/lib/leads";
+import { updatePainting } from "@/lib/paintings";
 import type { LeadStage } from "@/lib/stages";
 import type { Task } from "@/lib/tasks";
 import type { HistoryEntry } from "@/lib/history";
@@ -92,6 +93,23 @@ export default function LeadDetailView({
     }
   }
 
+  async function changePipelineStatus(pipeline_status: CoarseStatus) {
+    const previous = lead.pipeline_status;
+    setLead((l) => ({ ...l, pipeline_status }));
+
+    const supabase = createClient();
+    const { error } = await supabase.from("leads").update({ pipeline_status }).eq("id", lead.id);
+
+    if (error) {
+      setLead((l) => ({ ...l, pipeline_status: previous }));
+      return;
+    }
+
+    if (pipeline_status === "closed" && lead.painting_id) {
+      updatePainting(supabase, lead.painting_id, { is_available: false }).catch(() => {});
+    }
+  }
+
   async function assignManager(managerId: string | null) {
     const previous = lead.assigned_manager_id;
     setLead((l) => ({ ...l, assigned_manager_id: managerId }));
@@ -142,9 +160,9 @@ export default function LeadDetailView({
           </button>
         )}
         <StatusDropdown
-          value={lead.status}
-          options={stages.map((s) => ({ value: s.key, label: s.title, color: s.color }))}
-          onChange={changeStatus}
+          value={lead.pipeline_status}
+          options={COARSE_STATUS_OPTIONS}
+          onChange={changePipelineStatus}
           disabled={!canEdit}
         />
       </div>
@@ -169,6 +187,18 @@ export default function LeadDetailView({
             <p className="mt-1 text-sm text-fuchsia-300">{lead.paintings.title}</p>
           </div>
         )}
+
+        <div>
+          <p className="text-xs text-white/40">Этап CRM</p>
+          <div className="mt-1">
+            <StatusDropdown
+              value={lead.status}
+              options={stages.map((s) => ({ value: s.key, label: s.title, color: s.color }))}
+              onChange={changeStatus}
+              disabled={!canEdit}
+            />
+          </div>
+        </div>
 
         <div>
           <p className="text-xs text-white/40">Менеджер</p>

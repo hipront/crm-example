@@ -36,9 +36,13 @@ export default function LeadCard({
           ? { transform: `translate(${transform.x}px, ${transform.y}px)`, zIndex: 10 }
           : undefined
       }
-      className={`rounded-xl border border-white/10 bg-white/5 p-4 ${
+      className={`rounded-xl border p-4 transition-[border-color,box-shadow] duration-150 ${
         canEdit ? "cursor-grab touch-none active:cursor-grabbing" : "cursor-pointer"
-      } ${dragging ? "opacity-40" : ""}`}
+      } ${
+        dragging
+          ? "border-fuchsia-400/60 bg-white/5 opacity-40"
+          : "border-white/10 bg-white/5 hover:border-fuchsia-400/40 hover:bg-white/[0.07] hover:shadow-lg hover:shadow-fuchsia-500/10"
+      }`}
     >
       <span className="block font-medium">{lead.name}</span>
       {lead.paintings && (

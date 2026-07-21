@@ -12,8 +12,16 @@ import {
 import PaintingFormModal, { EMPTY_FORM, type FormState } from "@/components/admin/catalog/PaintingFormModal";
 import PaintingCards from "@/components/admin/catalog/PaintingCards";
 import ConfirmModal from "@/components/admin/ConfirmModal";
+import SelectDropdown from "@/components/admin/SelectDropdown";
 
 type SortMode = "date_desc" | "date_asc" | "price_asc" | "price_desc";
+
+const SORT_OPTIONS: { value: SortMode; label: string }[] = [
+  { value: "date_desc", label: "Сначала новые" },
+  { value: "date_asc", label: "Сначала старые" },
+  { value: "price_asc", label: "Сначала дешевле" },
+  { value: "price_desc", label: "Сначала дороже" },
+];
 
 export default function CatalogManager({
   initialPaintings,
@@ -158,24 +166,15 @@ export default function CatalogManager({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Поиск по названию…"
-            className="w-56 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-fuchsia-400"
+            className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-fuchsia-400 sm:w-56"
           />
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortMode)}
-            className="rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400"
-          >
-            <option value="date_desc">Сначала новые</option>
-            <option value="date_asc">Сначала старые</option>
-            <option value="price_asc">Сначала дешевле</option>
-            <option value="price_desc">Сначала дороже</option>
-          </select>
+          <SelectDropdown value={sort} options={SORT_OPTIONS} onChange={setSort} />
           <div className="flex rounded-lg border border-white/15 p-0.5">
             <button
               type="button"

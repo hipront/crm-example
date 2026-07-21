@@ -1,20 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Archive, X, ArrowRight } from "lucide-react";
-import { COARSE_STATUS_COLORS, COARSE_STATUS_LABELS, type Lead } from "@/lib/leads";
+import { X, ArrowRight } from "lucide-react";
+import { COARSE_STATUS_COLORS, COARSE_STATUS_LABELS } from "@/lib/leads";
+import type { TaskWithLead } from "@/lib/tasks";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
-export default function LeadPreviewSheet({
-  lead,
-  onArchive,
-  onClose,
-}: {
-  lead: Lead;
-  onArchive: () => void;
-  onClose: () => void;
-}) {
+export default function TaskLeadPreview({ task, onClose }: { task: TaskWithLead; onClose: () => void }) {
+  const lead = task.leads;
   useLockBodyScroll();
+  if (!lead) return null;
 
   return (
     <>
@@ -59,9 +54,14 @@ export default function LeadPreviewSheet({
               <p className="mt-1 whitespace-pre-wrap text-white/70">{lead.message}</p>
             </div>
           )}
+
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+            <p className="text-xs text-white/40">Задача</p>
+            <p className="mt-1 text-white/90">{task.description || "Без описания"}</p>
+          </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-4">
           <Link
             href={`/admin/leads/${lead.id}`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-fuchsia-300 transition-colors hover:text-fuchsia-200"
@@ -69,15 +69,6 @@ export default function LeadPreviewSheet({
             Открыть полную карточку
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
-
-          <button
-            type="button"
-            onClick={onArchive}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white"
-          >
-            <Archive className="h-3.5 w-3.5" />
-            В архив
-          </button>
         </div>
       </aside>
     </>

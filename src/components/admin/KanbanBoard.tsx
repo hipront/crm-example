@@ -205,7 +205,7 @@ export default function KanbanBoard({
 
       <DragOverlay>
         {activeLead ? (
-          <div className="w-72 rounded-xl border border-fuchsia-400/50 bg-[#1a1622] p-4 shadow-2xl">
+          <div className="w-72 rotate-1 rounded-xl border border-fuchsia-400/50 bg-[#1a1622] p-4 shadow-2xl">
             <p className="font-medium">{activeLead.name}</p>
             <p className="mt-1 text-sm text-white/60">{activeLead.contact}</p>
           </div>

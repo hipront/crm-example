@@ -5,6 +5,7 @@ import { ChevronDown, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { type Lead } from "@/lib/leads";
 import type { Painting } from "@/lib/paintings";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 function priceLabel(price: number) {
   return price.toLocaleString("ru-RU") + " ₽";
@@ -122,6 +123,7 @@ export default function NewLeadModal({
   onCreated: (lead: Lead) => void;
   onClose: () => void;
 }) {
+  useLockBodyScroll();
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [paintingId, setPaintingId] = useState("");
@@ -162,7 +164,7 @@ export default function NewLeadModal({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/70 p-4 py-10 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

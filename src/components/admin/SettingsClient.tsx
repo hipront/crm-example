@@ -157,7 +157,7 @@ function StageRow({
           if (e.key === "Enter") e.currentTarget.blur();
         }}
         disabled={savingTitle}
-        className="flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-white outline-none transition-colors hover:border-white/15 focus:border-fuchsia-400 focus:bg-black/30"
+        className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-white outline-none transition-colors hover:border-white/15 focus:border-fuchsia-400 focus:bg-black/30"
       />
 
       {leadCount > 0 && (
@@ -264,7 +264,7 @@ export default function SettingsClient({
 
         <div className="mt-4 border-t border-white/10 pt-4">
           <p className="text-xs font-medium text-white/50">Добавить этап</p>
-          <div className="relative mt-2 flex items-center gap-1.5">
+          <div className="relative mt-2 flex flex-wrap items-center gap-1.5">
             {PRESET_COLORS.map((c) => (
               <button
                 key={c}
@@ -301,13 +301,13 @@ export default function SettingsClient({
                 if (e.key === "Enter") void addStage();
               }}
               placeholder="Название этапа"
-              className="flex-1 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-fuchsia-400"
+              className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-fuchsia-400"
             />
             <button
               type="button"
               onClick={addStage}
               disabled={adding || !newTitle.trim()}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
               Добавить

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { updateProfileName } from "@/lib/profiles";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 export default function NameOnboardingModal({ userId, hasName }: { userId: string; hasName: boolean }) {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function NameOnboardingModal({ userId, hasName }: { userId: strin
   const [lastName, setLastName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useLockBodyScroll(open);
 
   if (!open) return null;
 

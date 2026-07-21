@@ -37,22 +37,32 @@ function formatDate(iso: string) {
   });
 }
 
+const COARSE_STATUS_SET = new Set<string>(COARSE_STATUS_OPTIONS.map((o) => o.value));
+
+function isCoarseStatus(value: string | undefined): value is CoarseStatus {
+  return !!value && COARSE_STATUS_SET.has(value);
+}
+
 export default function LeadsTable({
   initialLeads,
   role,
   managers,
   paintings,
+  initialPipelineFilter,
 }: {
   initialLeads: Lead[];
   role: string | null;
   managers: { id: string; full_name: string | null }[];
   paintings: Painting[];
+  initialPipelineFilter?: string;
 }) {
   const router = useRouter();
   const [leads, setLeads] = useState(initialLeads);
   const [showNewLead, setShowNewLead] = useState(false);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<CoarseStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<CoarseStatus | "all">(
+    isCoarseStatus(initialPipelineFilter) ? initialPipelineFilter : "all",
+  );
   const [periodDays, setPeriodDays] = useState<number | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -299,7 +309,7 @@ export default function LeadsTable({
             type="button"
             onClick={exportCsv}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Download className="h-3.5 w-3.5" />
             Экспорт CSV
@@ -327,27 +337,30 @@ export default function LeadsTable({
             </option>
           ))}
         </select>
-        <div className="flex items-center gap-1.5 text-sm text-white/50">
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 [color-scheme:dark]"
-          />
-          <span>—</span>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 [color-scheme:dark]"
-          />
-        </div>
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 [color-scheme:dark]"
+        />
+        <span className="shrink-0 text-sm text-white/50">—</span>
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 [color-scheme:dark]"
+        />
       </div>
 
       {canDelete && (
         <div className="mt-3 flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
           <label className="flex items-center gap-2 text-sm text-white/70">
-            <input type="checkbox" checked={allSelected} onChange={toggleAll} className="accent-fuchsia-500" />
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={toggleAll}
+              className="h-4 w-4 cursor-pointer accent-fuchsia-500"
+            />
             Выделить всех {selected.size > 0 ? `(${selected.size})` : ""}
           </label>
           <button
@@ -362,8 +375,95 @@ export default function LeadsTable({
         </div>
       )}
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-white/10">
-        <table className="w-full min-w-[720px] text-left text-sm">
+      <div className="mt-4 space-y-2 lg:hidden">
+        {paginated.map((lead) => (
+          <div
+            key={lead.id}
+            onDoubleClick={() => router.push(`/admin/leads/${lead.id}`)}
+            className="cursor-pointer rounded-2xl border border-white/10 bg-white/[0.02] p-3.5 transition-colors hover:bg-white/[0.04]"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex min-w-0 items-start gap-2.5">
+                {canDelete && (
+                  <input
+                    type="checkbox"
+                    checked={selected.has(lead.id)}
+                    onChange={() => toggleOne(lead.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500"
+                  />
+                )}
+                <div className="min-w-0">
+                  <p className="break-words font-medium text-white">{lead.name}</p>
+                  <p className="break-words text-xs text-white/50">{lead.contact}</p>
+                </div>
+              </div>
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteTarget(lead);
+                  }}
+                  className="shrink-0 text-white/30 transition-colors hover:text-red-400"
+                  aria-label="Удалить заявку"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/50">
+              <span className="truncate">{lead.paintings?.title ?? "—"}</span>
+              <span className="whitespace-nowrap">{formatDate(lead.created_at)}</span>
+            </div>
+
+            <div
+              className="mt-2.5 flex flex-wrap items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+              onDoubleClick={(e) => e.stopPropagation()}
+            >
+              {canAssignManager ? (
+                <ManagerDropdown
+                  value={lead.assigned_manager_id}
+                  managers={managers}
+                  onChange={(managerId) => assignManager(lead.id, managerId)}
+                />
+              ) : (
+                <span className="text-sm text-white/60">
+                  {lead.assigned_manager_id
+                    ? managers.find((m) => m.id === lead.assigned_manager_id)?.full_name || "Без имени"
+                    : "Не назначен"}
+                </span>
+              )}
+              <StatusDropdown
+                value={lead.pipeline_status}
+                options={COARSE_STATUS_OPTIONS}
+                onChange={(status) => changeStatus(lead.id, status)}
+                disabled={!canEditLead(lead)}
+              />
+            </div>
+          </div>
+        ))}
+
+        {paginated.length === 0 && (
+          <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-10 text-center text-sm text-white/40">
+            {search || statusFilter !== "all" ? "Ничего не найдено" : "Заявок пока нет"}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 hidden overflow-x-auto rounded-2xl border border-white/10 lg:block">
+        <table className="w-full min-w-[720px] table-fixed text-left text-sm">
+          <colgroup>
+            {canDelete && <col className="w-10" />}
+            <col className="w-[26%]" />
+            <col className="w-[18%]" />
+            <col className="w-[180px]" />
+            <col className="w-[150px]" />
+            <col className="w-[140px]" />
+            {canDelete && <col className="w-10" />}
+          </colgroup>
           <thead>
             <tr className="border-b border-white/10 bg-white/[0.03] text-xs text-white/40">
               {canDelete && <th className="w-10 px-3 py-3" />}
@@ -383,12 +483,12 @@ export default function LeadsTable({
                 className="cursor-pointer border-b border-white/5 last:border-0 hover:bg-white/[0.02]"
               >
                 {canDelete && (
-                  <td className="px-3 py-3">
+                  <td className="px-3 py-3" onDoubleClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={selected.has(lead.id)}
                       onChange={() => toggleOne(lead.id)}
-                      className="accent-fuchsia-500"
+                      className="h-4 w-4 cursor-pointer accent-fuchsia-500"
                     />
                   </td>
                 )}
@@ -396,7 +496,7 @@ export default function LeadsTable({
                   <p className="break-words font-medium text-white">{lead.name}</p>
                   <p className="break-words text-xs text-white/50">{lead.contact}</p>
                 </td>
-                <td className="px-3 py-3 text-white/70">{lead.paintings?.title ?? "—"}</td>
+                <td className="truncate px-3 py-3 text-white/70">{lead.paintings?.title ?? "—"}</td>
                 <td className="px-3 py-3" onDoubleClick={(e) => e.stopPropagation()}>
                   {canAssignManager ? (
                     <ManagerDropdown

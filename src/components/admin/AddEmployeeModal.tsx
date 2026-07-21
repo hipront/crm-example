@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { ASSIGNABLE_ROLES, ROLE_LABELS, createEmployee, type Profile, type Role } from "@/lib/profiles";
+import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
 
 const PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
 
@@ -19,6 +20,7 @@ export default function AddEmployeeModal({
   onCreated: (profile: Profile) => void;
   onClose: () => void;
 }) {
+  useLockBodyScroll();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,7 +61,7 @@ export default function AddEmployeeModal({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/70 p-4 py-10 backdrop-blur-sm">
       <form
         onSubmit={submit}
         className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0e0c12] p-5 shadow-2xl"
