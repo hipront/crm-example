@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { X, ArrowRight } from "lucide-react";
+import { Archive, X, ArrowRight } from "lucide-react";
 import { COARSE_STATUS_COLORS, COARSE_STATUS_LABELS, type Lead } from "@/lib/leads";
 
 export default function LeadPreviewSheet({
   lead,
+  onArchive,
   onClose,
 }: {
   lead: Lead;
+  onArchive: () => void;
   onClose: () => void;
 }) {
   return (
@@ -56,13 +58,24 @@ export default function LeadPreviewSheet({
           )}
         </div>
 
-        <Link
-          href={`/admin/leads/${lead.id}`}
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-fuchsia-300 transition-colors hover:text-fuchsia-200"
-        >
-          Открыть полную карточку
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <Link
+            href={`/admin/leads/${lead.id}`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-fuchsia-300 transition-colors hover:text-fuchsia-200"
+          >
+            Открыть полную карточку
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+
+          <button
+            type="button"
+            onClick={onArchive}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white"
+          >
+            <Archive className="h-3.5 w-3.5" />
+            В архив
+          </button>
+        </div>
       </aside>
     </>
   );

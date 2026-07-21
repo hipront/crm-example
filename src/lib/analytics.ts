@@ -1,13 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { LEAD_STATUSES, LEAD_STATUS_LABELS, type LeadStatus } from "@/lib/leads";
+import { type CoarseStatus, type LeadStatus } from "@/lib/leads";
+import type { LeadStage } from "@/lib/stages";
 
-const CONVERTED_STATUSES: LeadStatus[] = ["paid", "shipped", "closed"];
 const STALE_DAYS = 3;
 
 export type RawLead = {
   id: string;
   name: string;
   status: LeadStatus;
+  pipeline_status: CoarseStatus;
   assigned_manager_id: string | null;
   created_at: string;
   updated_at: string;
@@ -66,7 +67,7 @@ export async function getAnalyticsData(
     await Promise.all([
       client
         .from("leads")
-        .select("id, name, status, assigned_manager_id, created_at, updated_at, paintings(price)"),
+        .select("id, name, status, pipeline_status, assigned_manager_id, created_at, updated_at, paintings(price)"),
       client.from("profiles").select("id, full_name"),
     ]);
 
@@ -89,18 +90,19 @@ function inRange(iso: string, filter: PeriodFilter) {
 export function computeAnalytics(
   allLeads: RawLead[],
   profiles: RawProfile[],
+  stages: LeadStage[],
   filter: PeriodFilter = { from: null, to: null },
 ): Analytics {
   const nameById = new Map(profiles.map((p) => [p.id, p.full_name || "Без имени"]));
   const leads = allLeads.filter((l) => inRange(l.created_at, filter));
 
-  const nonRejected = leads.filter((l) => l.status !== "rejected");
-  const converted = leads.filter((l) => CONVERTED_STATUSES.includes(l.status));
+  const nonRejected = leads.filter((l) => l.pipeline_status !== "rejected");
+  const converted = leads.filter((l) => l.pipeline_status === "closed");
 
-  const funnel: FunnelStep[] = LEAD_STATUSES.filter((s) => s !== "rejected").map((status) => ({
-    status,
-    label: LEAD_STATUS_LABELS[status],
-    count: leads.filter((l) => l.status === status).length,
+  const funnel: FunnelStep[] = stages.map((stage) => ({
+    status: stage.key,
+    label: stage.title,
+    count: leads.filter((l) => l.status === stage.key).length,
   }));
 
   const revenueMap = new Map<string, ManagerRevenue>();

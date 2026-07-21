@@ -11,47 +11,34 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+import { Archive } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { type Lead, type LeadStatus } from "@/lib/leads";
-import { updatePainting } from "@/lib/paintings";
+import type { LeadStage } from "@/lib/stages";
 import LeadCard from "@/components/admin/kanban/LeadCard";
 import Column from "@/components/admin/kanban/Column";
-import ConfirmModal from "@/components/admin/ConfirmModal";
 import LeadPreviewSheet from "@/components/admin/kanban/LeadPreviewSheet";
-
-const VISIBLE_COLUMNS: LeadStatus[] = [
-  "new",
-  "in_progress",
-  "agreed",
-  "paid",
-  "shipped",
-  "closed",
-];
+import ArchivePanel from "@/components/admin/kanban/ArchivePanel";
 
 export default function KanbanBoard({
   initialLeads,
+  stages,
   role,
   highlightStatus,
 }: {
   initialLeads: Lead[];
+  stages: LeadStage[];
   role: string | null;
   highlightStatus?: string;
 }) {
   const [leads, setLeads] = useState(initialLeads);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [closeTarget, setCloseTarget] = useState<{ id: string; name: string; status: LeadStatus } | null>(
-    null,
-  );
   const [highlighted, setHighlighted] = useState(highlightStatus ?? null);
   const [previewLeadId, setPreviewLeadId] = useState<string | null>(null);
+  const [showArchive, setShowArchive] = useState(false);
   const columnRefs = useRef<Partial<Record<string, HTMLDivElement>>>({});
   const canEdit = role !== "viewer";
-  const isAdmin = role === "admin";
   const router = useRouter();
-
-  function canEditLead(lead: Lead) {
-    return canEdit && (lead.status !== "closed" || isAdmin);
-  }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -82,7 +69,7 @@ export default function KanbanBoard({
           const { data } = await supabase
             .from("leads")
             .select(
-              "id, name, contact, message, status, pipeline_status, assigned_manager_id, painting_id, created_at, paintings(title)",
+              "id, name, contact, message, status, pipeline_status, archived, assigned_manager_id, painting_id, created_at, paintings(title)",
             )
             .eq("id", payload.new.id)
             .single();
@@ -104,39 +91,16 @@ export default function KanbanBoard({
   }, []);
 
   async function applyStatusChange(id: string, status: LeadStatus) {
-    const lead = leads.find((l) => l.id === id);
-    const previousStatus = lead?.status;
-    if (!lead || previousStatus === status) return;
+    const previousStatus = leads.find((l) => l.id === id)?.status;
+    if (previousStatus === status) return;
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
 
     const supabase = createClient();
     const { error } = await supabase.from("leads").update({ status }).eq("id", id);
 
-    if (error) {
-      if (previousStatus) {
-        setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: previousStatus } : l)));
-      }
-      return;
+    if (error && previousStatus) {
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: previousStatus } : l)));
     }
-
-    if (status === "paid" && lead.painting_id) {
-      updatePainting(supabase, lead.painting_id, { is_available: false }).catch(() => {});
-    }
-  }
-
-  function requestStatusChange(id: string, status: LeadStatus) {
-    if (status === "closed") {
-      const lead = leads.find((l) => l.id === id);
-      if (lead) setCloseTarget({ id, name: lead.name, status });
-      return;
-    }
-    applyStatusChange(id, status);
-  }
-
-  function confirmClose() {
-    if (!closeTarget) return;
-    applyStatusChange(closeTarget.id, closeTarget.status);
-    setCloseTarget(null);
   }
 
   function handleDragStart(e: DragStartEvent) {
@@ -147,34 +111,56 @@ export default function KanbanBoard({
     setActiveId(null);
     const overStatus = e.over?.id as LeadStatus | undefined;
     if (!overStatus) return;
-    requestStatusChange(String(e.active.id), overStatus);
+    applyStatusChange(String(e.active.id), overStatus);
+  }
+
+  async function setArchived(id: string, archived: boolean) {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, archived } : l)));
+    const supabase = createClient();
+    await supabase.from("leads").update({ archived }).eq("id", id);
   }
 
   const activeLead = leads.find((l) => l.id === activeId) ?? null;
+  const archivedLeads = leads.filter((l) => l.archived);
 
   return (
     <DndContext
       sensors={sensors}
+      autoScroll={false}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
       <div className="space-y-8">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {VISIBLE_COLUMNS.map((status) => (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowArchive(true)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white"
+          >
+            <Archive className="h-3.5 w-3.5" />
+            Архив {archivedLeads.length > 0 ? `(${archivedLeads.length})` : ""}
+          </button>
+        </div>
+
+        <div
+          className="grid gap-4 overflow-x-auto pb-2"
+          style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(240px, 1fr))` }}
+        >
+          {stages.map((stage) => (
             <Column
-              key={status}
-              status={status}
-              leads={leads.filter((l) => l.status === status)}
+              key={stage.key}
+              stage={stage}
+              leads={leads.filter((l) => l.status === stage.key && !l.archived)}
               containerRef={(el) => {
-                columnRefs.current[status] = el ?? undefined;
+                columnRefs.current[stage.key] = el ?? undefined;
               }}
-              highlighted={highlighted === status}
+              highlighted={highlighted === stage.key}
               renderCard={(lead) => (
                 <LeadCard
                   key={lead.id}
                   lead={lead}
-                  canEdit={canEditLead(lead)}
+                  canEdit={canEdit}
                   onOpen={(l) => setPreviewLeadId(l.id)}
                   dragging={activeId === lead.id}
                 />
@@ -193,31 +179,28 @@ export default function KanbanBoard({
         ) : null}
       </DragOverlay>
 
-      {closeTarget && (
-        <ConfirmModal
-          title="Закрыть сделку?"
-          message={
-            <>
-              Вы точно хотите перевести заявку от «{closeTarget.name}» в статус &quot;Закрыт&quot;?
-              {isAdmin
-                ? " После этого статус смогут менять только администраторы."
-                : " После этого статус нельзя будет изменить — обратитесь к администратору."}
-            </>
-          }
-          confirmLabel="Закрыть сделку"
-          confirmVariant="brand"
-          onConfirm={confirmClose}
-          onCancel={() => setCloseTarget(null)}
-        />
-      )}
-
       {previewLeadId && (() => {
         const previewLead = leads.find((l) => l.id === previewLeadId);
         if (!previewLead) return null;
         return (
-          <LeadPreviewSheet lead={previewLead} onClose={() => setPreviewLeadId(null)} />
+          <LeadPreviewSheet
+            lead={previewLead}
+            onArchive={() => {
+              setArchived(previewLead.id, true);
+              setPreviewLeadId(null);
+            }}
+            onClose={() => setPreviewLeadId(null)}
+          />
         );
       })()}
+
+      {showArchive && (
+        <ArchivePanel
+          leads={archivedLeads}
+          onRestore={(id) => setArchived(id, false)}
+          onClose={() => setShowArchive(false)}
+        />
+      )}
     </DndContext>
   );
 }

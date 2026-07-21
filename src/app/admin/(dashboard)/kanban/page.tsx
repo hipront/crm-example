@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getLeads } from "@/lib/leads";
+import { getStages } from "@/lib/stages";
 import KanbanBoard from "@/components/admin/KanbanBoard";
 
 export default async function KanbanPage({
@@ -19,7 +20,8 @@ export default async function KanbanPage({
     .single();
 
   const leads = await getLeads(supabase);
+  const stages = await getStages(supabase);
   const { status } = await searchParams;
 
-  return <KanbanBoard initialLeads={leads} role={profile?.role ?? null} highlightStatus={status} />;
+  return <KanbanBoard initialLeads={leads} stages={stages} role={profile?.role ?? null} highlightStatus={status} />;
 }

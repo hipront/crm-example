@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
-import { LEAD_STATUS_LABELS, type Lead, type LeadStatus } from "@/lib/leads";
+import { type Lead } from "@/lib/leads";
+import type { LeadStage } from "@/lib/stages";
 
 const PAGE_SIZE = 15;
 
@@ -17,19 +18,19 @@ function matchesSearch(lead: Lead, query: string) {
 }
 
 export default function Column({
-  status,
+  stage,
   leads,
   renderCard,
   containerRef,
   highlighted,
 }: {
-  status: LeadStatus;
+  stage: LeadStage;
   leads: Lead[];
   renderCard: (lead: Lead) => React.ReactNode;
   containerRef?: (el: HTMLDivElement | null) => void;
   highlighted?: boolean;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { setNodeRef, isOver } = useDroppable({ id: stage.key });
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -53,7 +54,10 @@ export default function Column({
       }`}
     >
       <div className="mb-3 flex items-center justify-between px-1">
-        <h3 className="text-sm font-medium text-white/80">{LEAD_STATUS_LABELS[status]}</h3>
+        <h3 className="flex items-center gap-2 text-sm font-medium text-white/80">
+          <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: stage.color }} />
+          {stage.title}
+        </h3>
         <span className="text-xs text-white/40">{leads.length}</span>
       </div>
 

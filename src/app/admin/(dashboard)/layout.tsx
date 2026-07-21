@@ -53,7 +53,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </aside>
 
-      <div className="flex-1 px-6 pb-24 pt-10 md:pb-10">
+      <div className="min-w-0 flex-1 px-6 pb-24 pt-10 md:pb-10">
         <div className="flex items-center justify-between md:hidden">
           <div>
             <h1 className="text-xl font-semibold">Дашборд</h1>

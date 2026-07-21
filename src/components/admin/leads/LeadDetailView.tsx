@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Trash2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { LEAD_STATUS_OPTIONS, type Lead, type LeadStatus } from "@/lib/leads";
-import { updatePainting } from "@/lib/paintings";
+import { type Lead, type LeadStatus } from "@/lib/leads";
+import type { LeadStage } from "@/lib/stages";
 import StatusDropdown from "@/components/admin/StatusDropdown";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 
@@ -24,10 +24,12 @@ export default function LeadDetailView({
   initialLead,
   role,
   managers,
+  stages,
 }: {
   initialLead: Lead;
   role: string | null;
   managers: { id: string; full_name: string | null }[];
+  stages: LeadStage[];
 }) {
   const [lead, setLead] = useState(initialLead);
   const [deleting, setDeleting] = useState(false);
@@ -37,7 +39,7 @@ export default function LeadDetailView({
   const isAdmin = role === "admin";
   const canDelete = isAdmin;
   const canAssignManager = role === "rop" || role === "admin";
-  const canEdit = role !== "viewer" && (lead.status !== "closed" || isAdmin);
+  const canEdit = role !== "viewer" && (lead.pipeline_status !== "closed" || isAdmin);
 
   async function changeStatus(status: LeadStatus) {
     const previous = lead.status;
@@ -48,11 +50,6 @@ export default function LeadDetailView({
 
     if (error) {
       setLead((l) => ({ ...l, status: previous }));
-      return;
-    }
-
-    if (status === "paid" && lead.painting_id) {
-      updatePainting(supabase, lead.painting_id, { is_available: false }).catch(() => {});
     }
   }
 
@@ -105,7 +102,12 @@ export default function LeadDetailView({
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
           </button>
         )}
-        <StatusDropdown value={lead.status} options={LEAD_STATUS_OPTIONS} onChange={changeStatus} disabled={!canEdit} />
+        <StatusDropdown
+          value={lead.status}
+          options={stages.map((s) => ({ value: s.key, label: s.title, color: s.color }))}
+          onChange={changeStatus}
+          disabled={!canEdit}
+        />
       </div>
 
       <p className="mt-1 pl-8 text-xs text-white/40">Создана {formatDate(lead.created_at)}</p>

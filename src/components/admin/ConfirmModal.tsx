@@ -5,6 +5,7 @@ export default function ConfirmModal({
   message,
   confirmLabel,
   confirmVariant = "danger",
+  confirmDisabled = false,
   onConfirm,
   onCancel,
 }: {
@@ -12,6 +13,7 @@ export default function ConfirmModal({
   message: React.ReactNode;
   confirmLabel: string;
   confirmVariant?: "danger" | "brand";
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -29,10 +31,11 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
+            disabled={confirmDisabled}
             className={
               confirmVariant === "danger"
-                ? "rounded-full bg-red-500/90 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500"
-                : "rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                ? "rounded-full bg-red-500/90 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-500/90"
+                : "rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             }
           >
             {confirmLabel}

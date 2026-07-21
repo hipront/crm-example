@@ -11,7 +11,9 @@ import {
   type CoarseStatus,
   type Lead,
 } from "@/lib/leads";
+import { updatePainting } from "@/lib/paintings";
 import StatusDropdown from "@/components/admin/StatusDropdown";
+import ManagerDropdown from "@/components/admin/ManagerDropdown";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import NewLeadModal from "@/components/admin/leads/NewLeadModal";
 import type { Painting } from "@/lib/paintings";
@@ -86,7 +88,7 @@ export default function LeadsTable({
           const { data } = await supabase
             .from("leads")
             .select(
-              "id, name, contact, message, status, pipeline_status, assigned_manager_id, painting_id, created_at, paintings(title)",
+              "id, name, contact, message, status, pipeline_status, archived, assigned_manager_id, painting_id, created_at, paintings(title)",
             )
             .eq("id", payload.new.id)
             .single();
@@ -160,12 +162,21 @@ export default function LeadsTable({
   }
 
   async function changeStatus(leadId: string, pipeline_status: CoarseStatus) {
+    const lead = leads.find((l) => l.id === leadId);
     const previous = leads;
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, pipeline_status } : l)));
 
     const supabase = createClient();
     const { error } = await supabase.from("leads").update({ pipeline_status }).eq("id", leadId);
-    if (error) setLeads(previous);
+
+    if (error) {
+      setLeads(previous);
+      return;
+    }
+
+    if (pipeline_status === "closed" && lead?.painting_id) {
+      updatePainting(supabase, lead.painting_id, { is_available: false }).catch(() => {});
+    }
   }
 
   async function assignManager(leadId: string, managerId: string | null) {
@@ -386,20 +397,13 @@ export default function LeadsTable({
                   <p className="break-words text-xs text-white/50">{lead.contact}</p>
                 </td>
                 <td className="px-3 py-3 text-white/70">{lead.paintings?.title ?? "—"}</td>
-                <td className="px-3 py-3">
+                <td className="px-3 py-3" onDoubleClick={(e) => e.stopPropagation()}>
                   {canAssignManager ? (
-                    <select
-                      value={lead.assigned_manager_id ?? ""}
-                      onChange={(e) => assignManager(lead.id, e.target.value || null)}
-                      className="rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-xs text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400"
-                    >
-                      <option value="">Не назначен</option>
-                      {managers.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.full_name || "Без имени"}
-                        </option>
-                      ))}
-                    </select>
+                    <ManagerDropdown
+                      value={lead.assigned_manager_id}
+                      managers={managers}
+                      onChange={(managerId) => assignManager(lead.id, managerId)}
+                    />
                   ) : (
                     <span className="text-white/60">
                       {lead.assigned_manager_id

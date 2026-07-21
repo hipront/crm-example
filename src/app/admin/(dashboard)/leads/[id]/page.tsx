@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getLeadById } from "@/lib/leads";
 import { getManagers } from "@/lib/profiles";
+import { getStages } from "@/lib/stages";
 import LeadDetailView from "@/components/admin/leads/LeadDetailView";
 
 export default async function LeadDetailPage({
@@ -25,6 +26,7 @@ export default async function LeadDetailPage({
   if (!lead) notFound();
 
   const managers = await getManagers(supabase);
+  const stages = await getStages(supabase);
 
-  return <LeadDetailView initialLead={lead} role={profile?.role ?? null} managers={managers} />;
+  return <LeadDetailView initialLead={lead} role={profile?.role ?? null} managers={managers} stages={stages} />;
 }

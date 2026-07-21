@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { computeAnalytics, type PeriodFilter, type RawLead, type RawProfile } from "@/lib/analytics";
+import type { LeadStage } from "@/lib/stages";
 import LeadsMiniList from "@/components/admin/analytics/LeadsMiniList";
 import PeriodFilter_, { type CustomRange, type Period } from "@/components/admin/analytics/PeriodFilter";
 import FunnelChart from "@/components/admin/analytics/FunnelChart";
@@ -110,9 +111,11 @@ function BarRow({
 export default function AnalyticsDashboard({
   rawLeads,
   rawProfiles,
+  stages,
 }: {
   rawLeads: RawLead[];
   rawProfiles: RawProfile[];
+  stages: LeadStage[];
 }) {
   const router = useRouter();
   const [period, setPeriod] = useState<Period | null>("month");
@@ -120,12 +123,15 @@ export default function AnalyticsDashboard({
   const [openManager, setOpenManager] = useState<string | null>(null);
 
   const filter = useMemo(() => periodToFilter(period, customRange), [period, customRange]);
-  const data = useMemo(() => computeAnalytics(rawLeads, rawProfiles, filter), [rawLeads, rawProfiles, filter]);
+  const data = useMemo(
+    () => computeAnalytics(rawLeads, rawProfiles, stages, filter),
+    [rawLeads, rawProfiles, stages, filter],
+  );
 
   const prevFilter = useMemo(() => previousFilter(filter), [filter]);
   const prevData = useMemo(
-    () => (prevFilter ? computeAnalytics(rawLeads, rawProfiles, prevFilter) : null),
-    [rawLeads, rawProfiles, prevFilter],
+    () => (prevFilter ? computeAnalytics(rawLeads, rawProfiles, stages, prevFilter) : null),
+    [rawLeads, rawProfiles, stages, prevFilter],
   );
 
   function goToKanban(status: string) {

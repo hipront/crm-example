@@ -1,36 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const LEAD_STATUSES = [
-  "new",
-  "in_progress",
-  "agreed",
-  "paid",
-  "shipped",
-  "closed",
-  "rejected",
-] as const;
-
-export type LeadStatus = (typeof LEAD_STATUSES)[number];
-
-export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
-  new: "Новый",
-  in_progress: "В работе",
-  agreed: "Договорились",
-  paid: "Оплачен",
-  shipped: "Отправлен/Выдан",
-  closed: "Закрыт",
-  rejected: "Отказ",
-};
-
-export const LEAD_STATUS_COLORS: Record<LeadStatus, string> = {
-  new: "#94a3b8",
-  in_progress: "#22d3ee",
-  agreed: "#a855f7",
-  paid: "#4ade80",
-  shipped: "#e879f9",
-  closed: "#f5f3f7",
-  rejected: "#f87171",
-};
+// Этап канбана/CRM — раньше был жёстким enum, теперь ссылается на настраиваемую
+// таблицу lead_stages (см. src/lib/stages.ts), поэтому здесь просто строка.
+// Системные ключи ('new', 'paid', 'closed', 'rejected' и т.д.) по-прежнему
+// используются в бизнес-логике (снятие картины с продажи, финализация сделки),
+// но набор этапов на доске теперь произвольный и настраивается в /admin/settings.
+export type LeadStatus = string;
 
 export const COARSE_STATUSES = ["new", "in_progress", "closed", "rejected"] as const;
 export type CoarseStatus = (typeof COARSE_STATUSES)[number];
@@ -49,12 +24,6 @@ export const COARSE_STATUS_COLORS: Record<CoarseStatus, string> = {
   rejected: "#f87171",
 };
 
-export const LEAD_STATUS_OPTIONS = LEAD_STATUSES.map((value) => ({
-  value,
-  label: LEAD_STATUS_LABELS[value],
-  color: LEAD_STATUS_COLORS[value],
-}));
-
 export const COARSE_STATUS_OPTIONS = COARSE_STATUSES.map((value) => ({
   value,
   label: COARSE_STATUS_LABELS[value],
@@ -68,6 +37,7 @@ export type Lead = {
   message: string | null;
   status: LeadStatus;
   pipeline_status: CoarseStatus;
+  archived: boolean;
   assigned_manager_id: string | null;
   painting_id: string | null;
   created_at: string;
@@ -75,7 +45,7 @@ export type Lead = {
 };
 
 const LEAD_COLUMNS =
-  "id, name, contact, message, status, pipeline_status, assigned_manager_id, painting_id, created_at, paintings(title)";
+  "id, name, contact, message, status, pipeline_status, archived, assigned_manager_id, painting_id, created_at, paintings(title)";
 
 export async function getLeads(supabase: SupabaseClient): Promise<Lead[]> {
   const { data, error } = await supabase
