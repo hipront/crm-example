@@ -8,10 +8,16 @@ export default function SelectDropdown<T extends string>({
   value,
   options,
   onChange,
+  disabled,
+  title,
+  minWidth = 170,
 }: {
   value: T;
   options: { value: T; label: string }[];
   onChange: (value: T) => void;
+  disabled?: boolean;
+  title?: string;
+  minWidth?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
@@ -51,8 +57,11 @@ export default function SelectDropdown<T extends string>({
       <button
         ref={triggerRef}
         type="button"
+        disabled={disabled}
+        title={title}
         onClick={() => (open ? setOpen(false) : handleOpen())}
-        className="flex min-w-[170px] items-center justify-between gap-2 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors hover:border-white/30"
+        style={{ minWidth }}
+        className="flex items-center justify-between gap-2 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15"
       >
         <span className="truncate">{current?.label ?? value}</span>
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-white/50 transition-transform ${open ? "rotate-180" : ""}`} />

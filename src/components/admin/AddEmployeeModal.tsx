@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { ASSIGNABLE_ROLES, ROLE_LABELS, createEmployee, type Profile, type Role } from "@/lib/profiles";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
+import SelectDropdown from "@/components/admin/SelectDropdown";
+
+const ROLE_OPTIONS = ASSIGNABLE_ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] }));
 
 const PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
 
@@ -121,17 +124,9 @@ export default function AddEmployeeModal({
           </div>
           <div>
             <label className="text-xs text-white/40">Роль</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
-              className="mt-1 w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-fuchsia-400"
-            >
-              {ASSIGNABLE_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABELS[r]}
-                </option>
-              ))}
-            </select>
+            <div className="mt-1">
+              <SelectDropdown value={role} options={ROLE_OPTIONS} onChange={setRole} />
+            </div>
           </div>
         </div>
 

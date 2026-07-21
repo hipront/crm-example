@@ -16,7 +16,13 @@ import StatusDropdown from "@/components/admin/StatusDropdown";
 import ManagerDropdown from "@/components/admin/ManagerDropdown";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import NewLeadModal from "@/components/admin/leads/NewLeadModal";
+import SelectDropdown from "@/components/admin/SelectDropdown";
 import type { Painting } from "@/lib/paintings";
+
+const STATUS_FILTER_OPTIONS: { value: CoarseStatus | "all"; label: string }[] = [
+  { value: "all", label: "Все статусы" },
+  ...COARSE_STATUS_OPTIONS,
+];
 
 const PERIODS = [
   { label: "30 дней", days: 30 },
@@ -325,18 +331,7 @@ export default function LeadsTable({
           placeholder="Поиск по имени, контакту или картине…"
           className="min-w-[200px] flex-1 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-fuchsia-400"
         />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as CoarseStatus | "all")}
-          className="rounded-lg border border-white/15 bg-black/30 px-2.5 py-2 text-sm text-white outline-none transition-colors hover:border-white/30"
-        >
-          <option value="all">Все статусы</option>
-          {COARSE_STATUS_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <SelectDropdown value={statusFilter} options={STATUS_FILTER_OPTIONS} onChange={setStatusFilter} />
         <input
           type="date"
           value={dateFrom}

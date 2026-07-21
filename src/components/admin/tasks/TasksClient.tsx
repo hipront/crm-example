@@ -14,6 +14,12 @@ import {
 import { ROLE_LABELS, type Profile } from "@/lib/profiles";
 import NewTaskModal from "@/components/admin/tasks/NewTaskModal";
 import TaskLeadPreview from "@/components/admin/tasks/TaskLeadPreview";
+import SelectDropdown from "@/components/admin/SelectDropdown";
+
+const TYPE_FILTER_OPTIONS: { value: TaskType | "all"; label: string }[] = [
+  { value: "all", label: "Все типы" },
+  ...TASK_TYPES.map((t) => ({ value: t, label: TASK_TYPE_LABELS[t] })),
+];
 
 function formatDue(iso: string) {
   return new Date(iso).toLocaleString("ru-RU", {
@@ -221,18 +227,7 @@ export default function TasksClient({
                 className="w-full rounded-lg border border-white/15 bg-black/30 py-1.5 pl-9 pr-3 text-sm text-white outline-none focus:border-fuchsia-400"
               />
             </div>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as TaskType | "all")}
-              className="rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400"
-            >
-              <option value="all">Все типы</option>
-              {TASK_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {TASK_TYPE_LABELS[t]}
-                </option>
-              ))}
-            </select>
+            <SelectDropdown value={typeFilter} options={TYPE_FILTER_OPTIONS} onChange={setTypeFilter} />
             <div className="flex flex-wrap items-center gap-1.5 text-sm text-white/40">
               <span className="shrink-0">Срок:</span>
               <input

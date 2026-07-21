@@ -16,6 +16,7 @@ import {
 } from "@/lib/profiles";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import AddEmployeeModal from "@/components/admin/AddEmployeeModal";
+import SelectDropdown from "@/components/admin/SelectDropdown";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -167,19 +168,19 @@ export default function UsersManager({
                 <span className="hidden shrink-0 text-xs text-white/30 sm:block">
                   с {formatDate(p.created_at)}
                 </span>
-                <select
-                  value={p.role}
-                  disabled={!canEdit || isSelf || savingId === p.id}
-                  onChange={(e) => handleRoleChange(p.id, e.target.value as Role)}
-                  title={!canEdit ? undefined : isSelf ? "Нельзя изменить собственную роль" : undefined}
-                  className="w-32 shrink-0 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15 sm:w-36"
-                >
-                  {(p.role === "admin" ? ROLES : ASSIGNABLE_ROLES).map((r) => (
-                    <option key={r} value={r}>
-                      {ROLE_LABELS[r]}
-                    </option>
-                  ))}
-                </select>
+                <div className="shrink-0">
+                  <SelectDropdown
+                    value={p.role}
+                    disabled={!canEdit || isSelf || savingId === p.id}
+                    onChange={(role) => handleRoleChange(p.id, role)}
+                    title={!canEdit ? undefined : isSelf ? "Нельзя изменить собственную роль" : undefined}
+                    options={(p.role === "admin" ? ROLES : ASSIGNABLE_ROLES).map((r) => ({
+                      value: r,
+                      label: ROLE_LABELS[r],
+                    }))}
+                    minWidth={128}
+                  />
+                </div>
                 {canEdit && !isSelf && (
                   <div className="flex shrink-0 items-center gap-1">
                     <button

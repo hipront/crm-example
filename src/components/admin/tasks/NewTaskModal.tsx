@@ -11,6 +11,9 @@ import { createClient } from "@/lib/supabase/client";
 import { createTask, TASK_TYPE_LABELS, TASK_TYPES, type TaskType, type TaskWithLead } from "@/lib/tasks";
 import type { Profile } from "@/lib/profiles";
 import { useLockBodyScroll } from "@/lib/useLockBodyScroll";
+import SelectDropdown from "@/components/admin/SelectDropdown";
+
+const TASK_TYPE_OPTIONS = TASK_TYPES.map((t) => ({ value: t, label: TASK_TYPE_LABELS[t] }));
 
 function LeadPicker({
   leads,
@@ -171,37 +174,23 @@ export default function NewTaskModal({
 
           <div>
             <label className="text-xs text-white/40">Исполнитель *</label>
-            <select
-              required
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-fuchsia-400"
-            >
-              {profiles
-                .filter((p) => p.role !== "viewer")
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.full_name || p.email || "Без имени"}
-                  </option>
-                ))}
-            </select>
+            <div className="mt-1">
+              <SelectDropdown
+                value={assigneeId}
+                options={profiles
+                  .filter((p) => p.role !== "viewer")
+                  .map((p) => ({ value: p.id, label: p.full_name || p.email || "Без имени" }))}
+                onChange={setAssigneeId}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-white/40">Тип *</label>
-              <select
-                required
-                value={type}
-                onChange={(e) => setType(e.target.value as TaskType)}
-                className="mt-1 w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-fuchsia-400"
-              >
-                {TASK_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {TASK_TYPE_LABELS[t]}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-1">
+                <SelectDropdown value={type} options={TASK_TYPE_OPTIONS} onChange={setType} />
+              </div>
             </div>
             <div>
               <label className="text-xs text-white/40">Срок</label>
