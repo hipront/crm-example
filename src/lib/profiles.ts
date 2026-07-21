@@ -15,14 +15,16 @@ export type Profile = {
   full_name: string | null;
   email: string | null;
   role: Role;
+  is_active: boolean;
   created_at: string;
 };
 
 export async function getManagers(client: SupabaseClient): Promise<Profile[]> {
   const { data, error } = await client
     .from("profiles")
-    .select("id, full_name, email, role, created_at")
+    .select("id, full_name, email, role, is_active, created_at")
     .eq("role", "manager")
+    .eq("is_active", true)
     .order("full_name", { ascending: true });
 
   if (error) {
@@ -35,7 +37,7 @@ export async function getManagers(client: SupabaseClient): Promise<Profile[]> {
 export async function getAllProfiles(client: SupabaseClient): Promise<Profile[]> {
   const { data, error } = await client
     .from("profiles")
-    .select("id, full_name, email, role, created_at")
+    .select("id, full_name, email, role, is_active, created_at")
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -58,5 +60,13 @@ export async function updateProfileName(client: SupabaseClient, id: string, full
 
   if (error) {
     throw new Error(`Failed to update name: ${error.message}`);
+  }
+}
+
+export async function updateProfileActive(client: SupabaseClient, id: string, isActive: boolean) {
+  const { error } = await client.from("profiles").update({ is_active: isActive }).eq("id", id);
+
+  if (error) {
+    throw new Error(`Failed to update access: ${error.message}`);
   }
 }

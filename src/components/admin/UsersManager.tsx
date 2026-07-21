@@ -1,8 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { ShieldOff, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { ROLES, ROLE_LABELS, updateProfileName, updateProfileRole, type Profile, type Role } from "@/lib/profiles";
+import {
+  ROLES,
+  ROLE_LABELS,
+  updateProfileActive,
+  updateProfileName,
+  updateProfileRole,
+  type Profile,
+  type Role,
+} from "@/lib/profiles";
+import ConfirmModal from "@/components/admin/ConfirmModal";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -20,6 +30,7 @@ export default function UsersManager({
   const [profiles, setProfiles] = useState(initialProfiles);
   const [search, setSearch] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [blockTarget, setBlockTarget] = useState<Profile | null>(null);
 
   const visible = profiles.filter((p) => {
     const q = search.trim().toLowerCase();
@@ -57,8 +68,23 @@ export default function UsersManager({
     }
   }
 
+  async function handleToggleActive(p: Profile) {
+    setBlockTarget(null);
+    const nextActive = !p.is_active;
+    const previous = profiles;
+    setProfiles((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_active: nextActive } : x)));
+
+    try {
+      const supabase = createClient();
+      await updateProfileActive(supabase, p.id, nextActive);
+    } catch (err) {
+      setProfiles(previous);
+      alert(err instanceof Error ? err.message : "Не удалось изменить доступ");
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex items-center justify-between gap-3">
         <input
           type="search"
@@ -76,7 +102,7 @@ export default function UsersManager({
         {visible.map((p) => {
           const isSelf = p.id === currentUserId;
           return (
-            <div key={p.id} className="flex items-center gap-4 p-4">
+            <div key={p.id} className={`flex items-center gap-4 p-4 ${!p.is_active ? "opacity-50" : ""}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <input
@@ -90,6 +116,11 @@ export default function UsersManager({
                     className="w-full min-w-0 rounded-lg border border-transparent bg-transparent px-1.5 py-0.5 font-medium text-white outline-none transition-colors hover:border-white/15 focus:border-fuchsia-400 focus:bg-black/30 disabled:cursor-default disabled:hover:border-transparent"
                   />
                   {isSelf && <span className="shrink-0 text-xs text-fuchsia-300">(вы)</span>}
+                  {!p.is_active && (
+                    <span className="shrink-0 rounded-full border border-red-400/30 bg-red-400/10 px-2 py-0.5 text-xs text-red-300">
+                      Заблокирован
+                    </span>
+                  )}
                 </div>
                 <p className="truncate px-1.5 text-sm text-white/50">{p.email || "—"}</p>
               </div>
@@ -109,6 +140,21 @@ export default function UsersManager({
                   </option>
                 ))}
               </select>
+              {canEdit && !isSelf && (
+                <button
+                  type="button"
+                  onClick={() => setBlockTarget(p)}
+                  className={`shrink-0 rounded-lg p-1.5 transition-colors ${
+                    p.is_active
+                      ? "text-white/40 hover:bg-red-500/10 hover:text-red-400"
+                      : "text-emerald-400/70 hover:bg-emerald-500/10 hover:text-emerald-400"
+                  }`}
+                  aria-label={p.is_active ? "Заблокировать" : "Разблокировать"}
+                  title={p.is_active ? "Заблокировать" : "Разблокировать"}
+                >
+                  {p.is_active ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                </button>
+              )}
             </div>
           );
         })}
@@ -116,6 +162,26 @@ export default function UsersManager({
           <p className="p-8 text-center text-sm text-white/40">Ничего не найдено по «{search}»</p>
         )}
       </div>
+
+      {blockTarget && (
+        <ConfirmModal
+          title={blockTarget.is_active ? "Заблокировать пользователя?" : "Разблокировать пользователя?"}
+          message={
+            blockTarget.is_active ? (
+              <>
+                «{blockTarget.full_name || blockTarget.email}» немедленно потеряет доступ к админке. Его лиды,
+                история и назначения останутся без изменений — это обратимо, доступ можно вернуть в любой момент.
+              </>
+            ) : (
+              <>«{blockTarget.full_name || blockTarget.email}» снова сможет войти в админку.</>
+            )
+          }
+          confirmLabel={blockTarget.is_active ? "Заблокировать" : "Разблокировать"}
+          confirmVariant={blockTarget.is_active ? "danger" : "brand"}
+          onConfirm={() => handleToggleActive(blockTarget)}
+          onCancel={() => setBlockTarget(null)}
+        />
+      )}
     </div>
   );
 }

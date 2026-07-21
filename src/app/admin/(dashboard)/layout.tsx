@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import LogoutButton from "@/components/LogoutButton";
 import AdminNav, { AdminMobileNav } from "@/components/admin/AdminNav";
@@ -12,9 +13,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, role, is_active")
     .eq("id", user!.id)
     .single();
+
+  if (profile && !profile.is_active) {
+    await supabase.auth.signOut();
+    redirect("/admin/login?blocked=1");
+  }
 
   return (
     <div className="min-h-screen bg-black text-white md:flex">

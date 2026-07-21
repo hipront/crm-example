@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const blocked = searchParams.get("blocked") === "1";
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -40,6 +50,11 @@ export default function LoginPage() {
         className="grid w-full max-w-sm gap-4 rounded-2xl border border-white/10 bg-white/5 p-8"
       >
         <h1 className="text-xl font-semibold">Вход в админку</h1>
+        {blocked && (
+          <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-300">
+            Доступ к этому аккаунту заблокирован администратором.
+          </p>
+        )}
         <label className="flex flex-col gap-1.5 text-sm text-white/70">
           Email
           <input
