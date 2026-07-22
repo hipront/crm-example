@@ -223,6 +223,7 @@ export default function KanbanBoard({
               setPreviewLeadId(null);
             }}
             onClose={() => setPreviewLeadId(null)}
+            canArchive={canEdit}
           />
         );
       })()}
@@ -232,6 +233,7 @@ export default function KanbanBoard({
           leads={archivedLeads}
           onRestore={(id) => setArchived(id, false)}
           onClose={() => setShowArchive(false)}
+          canRestore={canEdit}
         />
       )}
     </DndContext>

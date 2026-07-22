@@ -9,10 +9,12 @@ export default function LeadPreviewSheet({
   lead,
   onArchive,
   onClose,
+  canArchive = true,
 }: {
   lead: Lead;
   onArchive: () => void;
   onClose: () => void;
+  canArchive?: boolean;
 }) {
   useLockBodyScroll();
 
@@ -72,8 +74,9 @@ export default function LeadPreviewSheet({
 
           <button
             type="button"
-            onClick={onArchive}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white"
+            onClick={() => canArchive && onArchive()}
+            disabled={!canArchive}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/15 disabled:hover:text-white/60"
           >
             <Archive className="h-3.5 w-3.5" />
             В архив

@@ -5,10 +5,12 @@ import type { AdminPainting } from "@/lib/paintings";
 function AvailabilityBadge({
   p,
   canEdit,
+  showEditControls,
   onToggle,
 }: {
   p: AdminPainting;
   canEdit: boolean;
+  showEditControls: boolean;
   onToggle: () => void;
 }) {
   const classes = `shrink-0 rounded-full px-2.5 py-1 text-xs transition-colors ${
@@ -17,12 +19,17 @@ function AvailabilityBadge({
       : `bg-white/10 text-white/40 ${canEdit ? "hover:bg-white/20 hover:text-white/60" : ""}`
   }`;
 
-  if (!canEdit) {
+  if (!showEditControls) {
     return <span className={classes}>{p.is_available ? "В наличии" : "Продано"}</span>;
   }
 
   return (
-    <button type="button" onClick={onToggle} className={classes}>
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={!canEdit}
+      className={`${classes} disabled:cursor-not-allowed disabled:opacity-60`}
+    >
       {p.is_available ? "В наличии" : "Продано"}
     </button>
   );
@@ -32,6 +39,7 @@ export default function PaintingCards({
   paintings,
   view,
   canEdit,
+  showEditControls,
   onToggleAvailable,
   onEdit,
   onDeleteRequest,
@@ -39,6 +47,7 @@ export default function PaintingCards({
   paintings: AdminPainting[];
   view: "grid" | "list";
   canEdit: boolean;
+  showEditControls: boolean;
   onToggleAvailable: (p: AdminPainting) => void;
   onEdit: (p: AdminPainting) => void;
   onDeleteRequest: (p: AdminPainting) => void;
@@ -75,21 +84,23 @@ export default function PaintingCards({
                 <p className={`font-medium ${p.is_available ? "" : "text-white/60"}`}>{p.title}</p>
                 <p className="text-sm text-white/50">{p.price.toLocaleString("ru-RU")} ₽</p>
               </div>
-              <AvailabilityBadge p={p} canEdit={canEdit} onToggle={() => onToggleAvailable(p)} />
+              <AvailabilityBadge p={p} canEdit={canEdit} showEditControls={showEditControls} onToggle={() => onToggleAvailable(p)} />
             </div>
-            {canEdit && (
+            {showEditControls && (
               <div className="mt-3 flex gap-2">
                 <button
                   type="button"
                   onClick={() => onEdit(p)}
-                  className="flex-1 rounded-lg border border-white/15 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
+                  disabled={!canEdit}
+                  className="flex-1 rounded-lg border border-white/15 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/15 disabled:hover:text-white/70"
                 >
                   Изменить
                 </button>
                 <button
                   type="button"
                   onClick={() => onDeleteRequest(p)}
-                  className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
+                  disabled={!canEdit}
+                  className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15 disabled:hover:text-white/40"
                 >
                   ✕
                 </button>
@@ -123,20 +134,22 @@ export default function PaintingCards({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <AvailabilityBadge p={p} canEdit={canEdit} onToggle={() => onToggleAvailable(p)} />
-            {canEdit && (
+            <AvailabilityBadge p={p} canEdit={canEdit} showEditControls={showEditControls} onToggle={() => onToggleAvailable(p)} />
+            {showEditControls && (
               <>
                 <button
                   type="button"
                   onClick={() => onEdit(p)}
-                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
+                  disabled={!canEdit}
+                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/15 disabled:hover:text-white/70"
                 >
                   Изменить
                 </button>
                 <button
                   type="button"
                   onClick={() => onDeleteRequest(p)}
-                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
+                  disabled={!canEdit}
+                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15 disabled:hover:text-white/40"
                 >
                   ✕
                 </button>

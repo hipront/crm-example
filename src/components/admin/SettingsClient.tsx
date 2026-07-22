@@ -78,11 +78,13 @@ function ColorPicker({
 function StageRow({
   stage,
   leadCount,
+  canEdit,
   onUpdated,
   onDeleted,
 }: {
   stage: LeadStage;
   leadCount: number;
+  canEdit: boolean;
   onUpdated: (stage: LeadStage) => void;
   onDeleted: (key: string) => void;
 }) {
@@ -139,8 +141,9 @@ function StageRow({
       <div className="relative shrink-0">
         <button
           type="button"
-          onClick={() => setPickingColor((v) => !v)}
-          className="h-5 w-5 rounded-full ring-2 ring-white/10 transition-transform hover:scale-110"
+          onClick={() => canEdit && setPickingColor((v) => !v)}
+          disabled={!canEdit}
+          className="h-5 w-5 rounded-full ring-2 ring-white/10 transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:hover:scale-100"
           style={{ backgroundColor: stage.color }}
           aria-label="Изменить цвет"
         />
@@ -156,8 +159,8 @@ function StageRow({
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
         }}
-        disabled={savingTitle}
-        className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-white outline-none transition-colors hover:border-white/15 focus:border-fuchsia-400 focus:bg-black/30"
+        disabled={savingTitle || !canEdit}
+        className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-white outline-none transition-colors hover:border-white/15 focus:border-fuchsia-400 focus:bg-black/30 disabled:cursor-default disabled:hover:border-transparent"
       />
 
       {leadCount > 0 && (
@@ -172,9 +175,9 @@ function StageRow({
 
       <button
         type="button"
-        onClick={() => setConfirmDelete(true)}
-        disabled={deleting}
-        className="shrink-0 rounded-lg p-1.5 text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-30"
+        onClick={() => canEdit && setConfirmDelete(true)}
+        disabled={deleting || !canEdit}
+        className="shrink-0 rounded-lg p-1.5 text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-white/40"
         aria-label="Удалить этап"
       >
         {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -212,9 +215,11 @@ function StageRow({
 export default function SettingsClient({
   initialStages,
   leadCounts,
+  canEdit,
 }: {
   initialStages: LeadStage[];
   leadCounts: Record<string, number>;
+  canEdit: boolean;
 }) {
   const [stages, setStages] = useState(initialStages);
   const [newTitle, setNewTitle] = useState("");
@@ -256,6 +261,7 @@ export default function SettingsClient({
               key={stage.key}
               stage={stage}
               leadCount={leadCounts[stage.key] ?? 0}
+              canEdit={canEdit}
               onUpdated={(updated) => setStages((prev) => prev.map((s) => (s.key === updated.key ? updated : s)))}
               onDeleted={(key) => setStages((prev) => prev.filter((s) => s.key !== key))}
             />
@@ -269,8 +275,9 @@ export default function SettingsClient({
               <button
                 key={c}
                 type="button"
-                onClick={() => setNewColor(c)}
-                className="h-6 w-6 shrink-0 rounded-full transition-transform hover:scale-110"
+                onClick={() => canEdit && setNewColor(c)}
+                disabled={!canEdit}
+                className="h-6 w-6 shrink-0 rounded-full transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:hover:scale-100"
                 style={{
                   backgroundColor: c,
                   boxShadow: newColor === c ? "0 0 0 2px #000, 0 0 0 4px #fff" : undefined,
@@ -279,8 +286,9 @@ export default function SettingsClient({
             ))}
             <button
               type="button"
-              onClick={() => setPickingNewColor((v) => !v)}
-              className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-dashed border-white/30 text-white/50 transition-colors hover:border-white/60 hover:text-white"
+              onClick={() => canEdit && setPickingNewColor((v) => !v)}
+              disabled={!canEdit}
+              className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-dashed border-white/30 text-white/50 transition-colors hover:border-white/60 hover:text-white disabled:cursor-not-allowed disabled:hover:border-white/30 disabled:hover:text-white/50"
               title="Свой цвет"
             >
               <Palette className="h-3 w-3" />
@@ -301,12 +309,13 @@ export default function SettingsClient({
                 if (e.key === "Enter") void addStage();
               }}
               placeholder="Название этапа"
-              className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-fuchsia-400"
+              disabled={!canEdit}
+              className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-50"
             />
             <button
               type="button"
               onClick={addStage}
-              disabled={adding || !newTitle.trim()}
+              disabled={!canEdit || adding || !newTitle.trim()}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}

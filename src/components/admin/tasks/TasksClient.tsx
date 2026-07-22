@@ -43,12 +43,15 @@ export default function TasksClient({
   profiles,
   leads,
   currentUserId,
+  role,
 }: {
   initialTasks: TaskWithLead[];
   profiles: Profile[];
   leads: { id: string; name: string }[];
   currentUserId: string;
+  role: string | null;
 }) {
+  const canEdit = role !== "viewer";
   const [tasks, setTasks] = useState(initialTasks);
   const [previewTask, setPreviewTask] = useState<TaskWithLead | null>(null);
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);
@@ -121,7 +124,8 @@ export default function TasksClient({
         <button
           type="button"
           onClick={() => setShowNew(true)}
-          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          disabled={!canEdit}
+          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Plus className="h-4 w-4" />
           Новая задача
@@ -281,7 +285,8 @@ export default function TasksClient({
                     checked={task.done}
                     onChange={() => toggleDone(task)}
                     onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500"
+                    disabled={!canEdit}
+                    className="h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -306,9 +311,10 @@ export default function TasksClient({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeTask(task.id);
+                      if (canEdit) removeTask(task.id);
                     }}
-                    className="shrink-0 text-white/30 transition-colors hover:text-red-400"
+                    disabled={!canEdit}
+                    className="shrink-0 text-white/30 transition-colors hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-white/30"
                     aria-label="Удалить задачу"
                   >
                     <Trash2 className="h-4 w-4" />

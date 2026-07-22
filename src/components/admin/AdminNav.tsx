@@ -22,7 +22,7 @@ const TABS: Tab[] = [
   { href: "/admin/analytics", label: "Аналитика", roles: ["rop", "admin", "viewer"], Icon: BarChart3 },
   { href: "/admin/catalog", label: "Каталог", roles: ["admin", "viewer"], Icon: Palette },
   { href: "/admin/users", label: "Пользователи", roles: ["admin", "viewer"], Icon: Users },
-  { href: "/admin/settings", label: "Настройки", roles: ["admin"], Icon: Settings },
+  { href: "/admin/settings", label: "Настройки", roles: ["admin", "viewer"], Icon: Settings },
 ];
 
 function useVisibleTabs(role: string | null) {

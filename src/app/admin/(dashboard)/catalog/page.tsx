@@ -16,5 +16,5 @@ export default async function CatalogPage() {
 
   const paintings = await getAllPaintings(supabase);
 
-  return <CatalogManager initialPaintings={paintings} canEdit={profile?.role === "admin"} />;
+  return <CatalogManager initialPaintings={paintings} canEdit={profile?.role === "admin"} role={profile?.role ?? null} />;
 }

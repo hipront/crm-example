@@ -26,10 +26,14 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 export default function CatalogManager({
   initialPaintings,
   canEdit,
+  role,
 }: {
   initialPaintings: AdminPainting[];
   canEdit: boolean;
+  role: string | null;
 }) {
+  const isViewer = role === "viewer";
+  const showEditControls = canEdit || isViewer;
   const [paintings, setPaintings] = useState(initialPaintings);
   const [form, setForm] = useState<FormState | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -199,11 +203,12 @@ export default function CatalogManager({
             {visible.length} из {paintings.length}
           </p>
         </div>
-        {canEdit && (
+        {showEditControls && (
           <button
             type="button"
             onClick={openCreate}
-            className="rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 active:scale-[0.97]"
+            disabled={!canEdit}
+            className="rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
           >
             + Добавить картину
           </button>
@@ -233,6 +238,7 @@ export default function CatalogManager({
         paintings={visible}
         view={view}
         canEdit={canEdit}
+        showEditControls={showEditControls}
         onToggleAvailable={handleToggleAvailable}
         onEdit={openEdit}
         onDeleteRequest={setDeleteTarget}

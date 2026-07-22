@@ -10,6 +10,12 @@ export default async function TasksPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+
   const [tasks, profiles, leads] = await Promise.all([
     getAllTasks(supabase),
     getAllProfiles(supabase),
@@ -22,6 +28,7 @@ export default async function TasksPage() {
       profiles={profiles}
       leads={leads.map((l) => ({ id: l.id, name: l.name }))}
       currentUserId={user!.id}
+      role={profile?.role ?? null}
     />
   );
 }

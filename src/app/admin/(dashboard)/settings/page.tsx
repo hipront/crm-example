@@ -15,10 +15,10 @@ export default async function SettingsPage() {
     .eq("id", user!.id)
     .single();
 
-  if (profile?.role !== "admin") redirect("/admin/leads");
+  if (profile?.role !== "admin" && profile?.role !== "viewer") redirect("/admin/leads");
 
   const stages = await getStages(supabase);
   const leadCounts = await getStageLeadCounts(supabase);
 
-  return <SettingsClient initialStages={stages} leadCounts={leadCounts} />;
+  return <SettingsClient initialStages={stages} leadCounts={leadCounts} canEdit={profile?.role === "admin"} />;
 }

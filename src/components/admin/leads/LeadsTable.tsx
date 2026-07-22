@@ -83,6 +83,9 @@ export default function LeadsTable({
   const canDelete = role === "admin";
   const canAssignManager = role === "rop" || role === "admin";
   const isAdmin = role === "admin";
+  const isViewer = role === "viewer";
+  const showDeleteControls = canDelete || isViewer;
+  const showManagerDropdown = canAssignManager || isViewer;
 
   function canEditLead(lead: Lead) {
     return role !== "viewer" && (lead.pipeline_status !== "closed" || isAdmin);
@@ -364,21 +367,22 @@ export default function LeadsTable({
         )}
       </div>
 
-      {canDelete && (
+      {showDeleteControls && (
         <div className="mt-3 flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
           <label className="flex items-center gap-2 text-sm text-white/70">
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
-              className="h-4 w-4 cursor-pointer accent-fuchsia-500"
+              disabled={!canDelete}
+              className="h-4 w-4 cursor-pointer accent-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
             />
             Выделить всех {selected.size > 0 ? `(${selected.size})` : ""}
           </label>
           <button
             type="button"
             onClick={() => setConfirmBulkDelete(true)}
-            disabled={bulkDeleting || selected.size === 0}
+            disabled={!canDelete || bulkDeleting || selected.size === 0}
             className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-30"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -396,13 +400,14 @@ export default function LeadsTable({
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex min-w-0 items-start gap-2.5">
-                {canDelete && (
+                {showDeleteControls && (
                   <input
                     type="checkbox"
                     checked={selected.has(lead.id)}
                     onChange={() => toggleOne(lead.id)}
                     onClick={(e) => e.stopPropagation()}
-                    className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500"
+                    disabled={!canDelete}
+                    className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 )}
                 <div className="min-w-0">
@@ -410,14 +415,15 @@ export default function LeadsTable({
                   <p className="break-words text-xs text-white/50">{lead.contact}</p>
                 </div>
               </div>
-              {canDelete && (
+              {showDeleteControls && (
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setDeleteTarget(lead);
+                    if (canDelete) setDeleteTarget(lead);
                   }}
-                  className="shrink-0 text-white/30 transition-colors hover:text-red-400"
+                  disabled={!canDelete}
+                  className="shrink-0 text-white/30 transition-colors hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-white/30"
                   aria-label="Удалить заявку"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -435,11 +441,12 @@ export default function LeadsTable({
               onClick={(e) => e.stopPropagation()}
               onDoubleClick={(e) => e.stopPropagation()}
             >
-              {canAssignManager ? (
+              {showManagerDropdown ? (
                 <ManagerDropdown
                   value={lead.assigned_manager_id}
                   managers={managers}
                   onChange={(managerId) => assignManager(lead.id, managerId)}
+                  disabled={!canAssignManager}
                 />
               ) : (
                 <span className="text-sm text-white/60">
@@ -468,23 +475,23 @@ export default function LeadsTable({
       <div className="mt-4 hidden overflow-x-auto rounded-2xl border border-white/10 lg:block">
         <table className="w-full min-w-[720px] table-fixed text-left text-sm">
           <colgroup>
-            {canDelete && <col className="w-10" />}
+            {showDeleteControls && <col className="w-10" />}
             <col className="w-[26%]" />
             <col className="w-[18%]" />
             <col className="w-[180px]" />
             <col className="w-[150px]" />
             <col className="w-[140px]" />
-            {canDelete && <col className="w-10" />}
+            {showDeleteControls && <col className="w-10" />}
           </colgroup>
           <thead>
             <tr className="border-b border-white/10 bg-white/[0.03] text-xs text-white/40">
-              {canDelete && <th className="w-10 px-3 py-3" />}
+              {showDeleteControls && <th className="w-10 px-3 py-3" />}
               <th className="px-3 py-3 font-medium">Контакт</th>
               <th className="px-3 py-3 font-medium">Картина</th>
               <th className="px-3 py-3 font-medium">Менеджер</th>
               <th className="px-3 py-3 font-medium">Статус</th>
               <th className="px-3 py-3 font-medium">Дата</th>
-              {canDelete && <th className="w-10 px-3 py-3" />}
+              {showDeleteControls && <th className="w-10 px-3 py-3" />}
             </tr>
           </thead>
           <tbody>
@@ -494,13 +501,14 @@ export default function LeadsTable({
                 onDoubleClick={() => router.push(`/admin/leads/${lead.id}`)}
                 className="cursor-pointer border-b border-white/5 last:border-0 hover:bg-white/[0.02]"
               >
-                {canDelete && (
+                {showDeleteControls && (
                   <td className="px-3 py-3" onDoubleClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={selected.has(lead.id)}
                       onChange={() => toggleOne(lead.id)}
-                      className="h-4 w-4 cursor-pointer accent-fuchsia-500"
+                      disabled={!canDelete}
+                      className="h-4 w-4 cursor-pointer accent-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </td>
                 )}
@@ -510,11 +518,12 @@ export default function LeadsTable({
                 </td>
                 <td className="truncate px-3 py-3 text-white/70">{lead.paintings?.title ?? "—"}</td>
                 <td className="px-3 py-3" onDoubleClick={(e) => e.stopPropagation()}>
-                  {canAssignManager ? (
+                  {showManagerDropdown ? (
                     <ManagerDropdown
                       value={lead.assigned_manager_id}
                       managers={managers}
                       onChange={(managerId) => assignManager(lead.id, managerId)}
+                      disabled={!canAssignManager}
                     />
                   ) : (
                     <span className="text-white/60">
@@ -533,12 +542,13 @@ export default function LeadsTable({
                   />
                 </td>
                 <td className="px-3 py-3 whitespace-nowrap text-white/50">{formatDate(lead.created_at)}</td>
-                {canDelete && (
+                {showDeleteControls && (
                   <td className="px-3 py-3">
                     <button
                       type="button"
-                      onClick={() => setDeleteTarget(lead)}
-                      className="text-white/30 transition-colors hover:text-red-400"
+                      onClick={() => canDelete && setDeleteTarget(lead)}
+                      disabled={!canDelete}
+                      className="text-white/30 transition-colors hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-white/30"
                       aria-label="Удалить заявку"
                     >
                       <Trash2 className="h-4 w-4" />

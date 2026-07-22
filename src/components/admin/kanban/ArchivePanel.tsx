@@ -18,10 +18,12 @@ export default function ArchivePanel({
   leads,
   onRestore,
   onClose,
+  canRestore = true,
 }: {
   leads: Lead[];
   onRestore: (leadId: string) => void;
   onClose: () => void;
+  canRestore?: boolean;
 }) {
   useLockBodyScroll();
 
@@ -66,8 +68,9 @@ export default function ArchivePanel({
                 </div>
                 <button
                   type="button"
-                  onClick={() => onRestore(lead.id)}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 px-2.5 py-1 text-xs text-white/70 transition-colors hover:border-white/30 hover:text-white"
+                  onClick={() => canRestore && onRestore(lead.id)}
+                  disabled={!canRestore}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 px-2.5 py-1 text-xs text-white/70 transition-colors hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/15 disabled:hover:text-white/70"
                 >
                   <ArchiveRestore className="h-3.5 w-3.5" />
                   Вернуть

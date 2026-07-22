@@ -26,13 +26,16 @@ export default function TaskList({
   initialTasks,
   profiles,
   currentUserId,
+  role,
 }: {
   leadId: string;
   leadName: string;
   initialTasks: Task[];
   profiles: Profile[];
   currentUserId: string;
+  role: string | null;
 }) {
+  const canEdit = role !== "viewer";
   const [tasks, setTasks] = useState(initialTasks);
   const [open, setOpen] = useState(true);
   const [showNew, setShowNew] = useState(false);
@@ -67,7 +70,8 @@ export default function TaskList({
           <button
             type="button"
             onClick={() => setShowNew(true)}
-            className="inline-flex items-center gap-1 text-xs font-medium text-fuchsia-300 transition-colors hover:text-fuchsia-200"
+            disabled={!canEdit}
+            className="inline-flex items-center gap-1 text-xs font-medium text-fuchsia-300 transition-colors hover:text-fuchsia-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-fuchsia-300"
           >
             <Plus className="h-3.5 w-3.5" />
             Добавить
@@ -93,7 +97,8 @@ export default function TaskList({
                 type="checkbox"
                 checked={task.done}
                 onChange={() => toggleDone(task)}
-                className="h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500"
+                disabled={!canEdit}
+                className="h-4 w-4 shrink-0 cursor-pointer accent-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
               />
               <div className="min-w-0 flex-1">
                 <p className={`truncate text-sm ${task.done ? "text-white/40 line-through" : "text-white/90"}`}>
@@ -107,8 +112,9 @@ export default function TaskList({
               </div>
               <button
                 type="button"
-                onClick={() => removeTask(task.id)}
-                className="shrink-0 text-white/30 transition-colors hover:text-red-400"
+                onClick={() => canEdit && removeTask(task.id)}
+                disabled={!canEdit}
+                className="shrink-0 text-white/30 transition-colors hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-white/30"
                 aria-label="Удалить задачу"
               >
                 <Trash2 className="h-3.5 w-3.5" />

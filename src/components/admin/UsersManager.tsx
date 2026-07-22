@@ -26,11 +26,15 @@ export default function UsersManager({
   initialProfiles,
   currentUserId,
   canEdit,
+  role,
 }: {
   initialProfiles: Profile[];
   currentUserId: string;
   canEdit: boolean;
+  role: string | null;
 }) {
+  const isViewer = role === "viewer";
+  const showEditControls = canEdit || isViewer;
   const [profiles, setProfiles] = useState(initialProfiles);
   const [search, setSearch] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -121,11 +125,12 @@ export default function UsersManager({
           <p className="text-sm text-white/50">
             {visible.length} из {profiles.length}
           </p>
-          {canEdit && (
+          {showEditControls && (
             <button
               type="button"
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white"
+              disabled={!canEdit}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/15 disabled:hover:text-white/80"
             >
               <Plus className="h-3.5 w-3.5" />
               Добавить сотрудника
@@ -181,15 +186,16 @@ export default function UsersManager({
                     minWidth={128}
                   />
                 </div>
-                {canEdit && !isSelf && (
+                {showEditControls && !isSelf && (
                   <div className="flex shrink-0 items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => setBlockTarget(p)}
-                      className={`shrink-0 rounded-lg p-1.5 transition-colors ${
+                      onClick={() => canEdit && setBlockTarget(p)}
+                      disabled={!canEdit}
+                      className={`shrink-0 rounded-lg p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                         p.is_active
-                          ? "text-white/40 hover:bg-red-500/10 hover:text-red-400"
-                          : "text-emerald-400/70 hover:bg-emerald-500/10 hover:text-emerald-400"
+                          ? "text-white/40 hover:bg-red-500/10 hover:text-red-400 disabled:hover:bg-transparent disabled:hover:text-white/40"
+                          : "text-emerald-400/70 hover:bg-emerald-500/10 hover:text-emerald-400 disabled:hover:bg-transparent disabled:hover:text-emerald-400/70"
                       }`}
                       aria-label={p.is_active ? "Заблокировать" : "Разблокировать"}
                       title={p.is_active ? "Заблокировать" : "Разблокировать"}
@@ -199,10 +205,12 @@ export default function UsersManager({
                     <button
                       type="button"
                       onClick={() => {
+                        if (!canEdit) return;
                         setDeleteError(null);
                         setDeleteTarget(p);
                       }}
-                      className="shrink-0 rounded-lg p-1.5 text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                      disabled={!canEdit}
+                      className="shrink-0 rounded-lg p-1.5 text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-white/40"
                       aria-label="Удалить сотрудника"
                       title="Удалить безвозвратно"
                     >

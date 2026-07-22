@@ -77,9 +77,12 @@ export default function LeadDetailView({
   const router = useRouter();
 
   const isAdmin = role === "admin";
+  const isViewer = role === "viewer";
   const canDelete = isAdmin;
   const canAssignManager = role === "rop" || role === "admin";
   const canEdit = role !== "viewer" && (lead.pipeline_status !== "closed" || isAdmin);
+  const showDeleteButton = canDelete || isViewer;
+  const showManagerDropdown = canAssignManager || isViewer;
 
   async function changeStatus(status: LeadStatus) {
     const previous = lead.status;
@@ -148,12 +151,12 @@ export default function LeadDetailView({
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="min-w-0 flex-1 truncate text-xl font-semibold">{lead.name}</h1>
-        {canDelete && (
+        {showDeleteButton && (
           <button
             type="button"
-            onClick={() => setConfirmDelete(true)}
-            disabled={deleting}
-            className="shrink-0 rounded-full border border-white/15 p-2 text-white/50 transition-colors hover:border-red-400/50 hover:text-red-400 disabled:opacity-50"
+            onClick={() => canDelete && setConfirmDelete(true)}
+            disabled={!canDelete || deleting}
+            className="shrink-0 rounded-full border border-white/15 p-2 text-white/50 transition-colors hover:border-red-400/50 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/15 disabled:hover:text-white/50"
             aria-label="Удалить заявку"
           >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -202,12 +205,13 @@ export default function LeadDetailView({
 
         <div>
           <p className="text-xs text-white/40">Менеджер</p>
-          {canAssignManager ? (
+          {showManagerDropdown ? (
             <div className="mt-1">
               <ManagerDropdown
                 value={lead.assigned_manager_id}
                 managers={managers}
                 onChange={assignManager}
+                disabled={!canAssignManager}
               />
             </div>
           ) : (
@@ -233,6 +237,7 @@ export default function LeadDetailView({
         initialTasks={initialTasks}
         profiles={profiles}
         currentUserId={currentUserId}
+        role={role}
       />
 
       <CollapsibleSection title="История" defaultOpen={false}>
