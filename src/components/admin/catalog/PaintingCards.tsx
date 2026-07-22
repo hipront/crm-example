@@ -106,39 +106,43 @@ export default function PaintingCards({
       {paintings.map((p) => (
         <div
           key={p.id}
-          className={`flex items-center gap-4 p-3 transition-colors hover:bg-white/[0.04] ${p.is_available ? "" : "opacity-70"}`}
+          className={`flex flex-wrap items-center gap-3 p-3 transition-colors hover:bg-white/[0.04] ${p.is_available ? "" : "opacity-70"}`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={p.image_url}
-            alt={p.title}
-            className={`h-14 w-11 shrink-0 rounded-md object-cover ${
-              p.is_available ? "" : "grayscale-[85%] brightness-[0.6]"
-            }`}
-          />
-          <div className="min-w-0 flex-1">
-            <p className={`truncate font-medium ${p.is_available ? "" : "text-white/60"}`}>{p.title}</p>
-            <p className="text-sm text-white/50">{p.price.toLocaleString("ru-RU")} ₽</p>
+          <div className="flex min-w-[160px] flex-1 items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={p.image_url}
+              alt={p.title}
+              className={`h-14 w-11 shrink-0 rounded-md object-cover ${
+                p.is_available ? "" : "grayscale-[85%] brightness-[0.6]"
+              }`}
+            />
+            <div className="min-w-0 flex-1">
+              <p className={`truncate font-medium ${p.is_available ? "" : "text-white/60"}`}>{p.title}</p>
+              <p className="text-sm text-white/50">{p.price.toLocaleString("ru-RU")} ₽</p>
+            </div>
           </div>
-          <AvailabilityBadge p={p} canEdit={canEdit} onToggle={() => onToggleAvailable(p)} />
-          {canEdit && (
-            <>
-              <button
-                type="button"
-                onClick={() => onEdit(p)}
-                className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
-              >
-                Изменить
-              </button>
-              <button
-                type="button"
-                onClick={() => onDeleteRequest(p)}
-                className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
-              >
-                ✕
-              </button>
-            </>
-          )}
+          <div className="flex shrink-0 items-center gap-2">
+            <AvailabilityBadge p={p} canEdit={canEdit} onToggle={() => onToggleAvailable(p)} />
+            {canEdit && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onEdit(p)}
+                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
+                >
+                  Изменить
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDeleteRequest(p)}
+                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-colors hover:border-red-400/50 hover:text-red-400"
+                >
+                  ✕
+                </button>
+              </>
+            )}
+          </div>
         </div>
       ))}
     </div>

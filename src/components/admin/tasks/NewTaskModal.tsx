@@ -185,11 +185,11 @@ export default function NewTaskModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="text-xs text-white/40">Тип *</label>
               <div className="mt-1">
-                <SelectDropdown value={type} options={TASK_TYPE_OPTIONS} onChange={setType} />
+                <SelectDropdown value={type} options={TASK_TYPE_OPTIONS} onChange={setType} minWidth={0} />
               </div>
             </div>
             <div>
