@@ -59,6 +59,7 @@ export default function TasksClient({
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const today = new Date().toISOString().slice(0, 10);
 
   const profileById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
 
@@ -233,6 +234,7 @@ export default function TasksClient({
               <input
                 type="date"
                 value={dateFrom}
+                max={today}
                 onChange={(e) => setDateFrom(e.target.value)}
                 className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 [color-scheme:dark]"
               />
@@ -240,6 +242,7 @@ export default function TasksClient({
               <input
                 type="date"
                 value={dateTo}
+                max={today}
                 onChange={(e) => setDateTo(e.target.value)}
                 className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none focus:border-fuchsia-400 [color-scheme:dark]"
               />

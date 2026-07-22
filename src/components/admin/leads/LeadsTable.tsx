@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Download, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Plus, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   COARSE_STATUS_OPTIONS,
@@ -72,6 +72,7 @@ export default function LeadsTable({
   const [periodDays, setPeriodDays] = useState<number | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null);
@@ -306,7 +307,8 @@ export default function LeadsTable({
           <button
             type="button"
             onClick={() => setShowNewLead(true)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white"
+            disabled={role === "viewer"}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/15 disabled:hover:text-white/80"
           >
             <Plus className="h-3.5 w-3.5" />
             Новый лид
@@ -335,6 +337,7 @@ export default function LeadsTable({
         <input
           type="date"
           value={dateFrom}
+          max={today}
           onChange={(e) => setDateFrom(e.target.value)}
           className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 [color-scheme:dark]"
         />
@@ -342,9 +345,23 @@ export default function LeadsTable({
         <input
           type="date"
           value={dateTo}
+          max={today}
           onChange={(e) => setDateTo(e.target.value)}
           className="w-[132px] shrink-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm text-white outline-none transition-colors hover:border-white/30 [color-scheme:dark]"
         />
+        {(dateFrom || dateTo) && (
+          <button
+            type="button"
+            onClick={() => {
+              setDateFrom("");
+              setDateTo("");
+            }}
+            title="Сбросить диапазон дат"
+            className="shrink-0 text-white/40 transition-colors hover:text-white"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {canDelete && (
